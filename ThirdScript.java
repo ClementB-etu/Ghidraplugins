@@ -50,15 +50,16 @@ public class ThirdScript extends GhidraScript {
             return;
         }
 
-        println("TEST");
 
-        /*FunctionManager funmanag = currentProgram.getFunctionManager();
+        FunctionManager funmanag = currentProgram.getFunctionManager();
         FunctionIterator funit = funmanag.getFunctions(true);
 
         while (funit.hasNext()) {
-            funit.next();
-            println("funit : " + funit);
-        }*/
+            Function f = funit.next();
+            println("funit : " + f.getName());
+            f.setComment("Commented " + f.getName() + " at " + f.getEntryPoint());
+            
+        }
 
     }
 
