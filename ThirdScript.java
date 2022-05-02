@@ -20,11 +20,13 @@
 
 
 import ghidra.app.script.GhidraScript;
-import ghidra.app.decompiler as decomp;
 
 
 import ghidra.program.model.address.Address;
 import ghidra.program.model.mem.Memory;
+import ghidra.program.model.listing.Listing;
+import ghidra.program.model.listing.Instruction;
+import ghidra.program.model.listing.InstructionIterator;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.FunctionIterator;
@@ -63,8 +65,8 @@ public class ThirdScript extends GhidraScript {
 
         while (funit.hasNext()) {
             Function f = funit.next();
-            println("funit : " + f.getName());
-            f.setComment("Commented " + f.getName() + " at " + f.getEntryPoint());
+            //println("funit : " + f.getName());
+            //f.setComment("Commented " + f.getName() + " at " + f.getEntryPoint());
             
         }
 
@@ -72,7 +74,45 @@ public class ThirdScript extends GhidraScript {
             ITERATES THROUGH INSTRUCTION
         */
             
+        Listing listing = currentProgram.getListing();
+        InstructionIterator listit = listing.getInstructions(true);
+
+
+        while (listit.hasNext()) {
+            Instruction instr = listit.next();
+
+            Address addrinst = instr.getAddress();
+            String mnemo = instr.getMnemonicString();
+            String label = instr.getLabel();
+            Object[] ops = instr.getOpObjects(0); // 0 : address
+
+
+            try
+            { 
+                println("mnemo : " + mnemo);
+
+                Address[] susaddr = instr.getDefaultFlows();
+               
+                
+
+                for (int i = 0; i< susaddr.length; i++)
+                {
+                    Function susfun = listing.getFunctionAt(susaddr[i]);
+                    String susname = susfun.getName();
+                    println("Name of targeted function : " + susname + " at " + susaddr[i]);
+                }
+
+
+            }
+               
+            catch(Exception e)
+            {
+			    e.printStackTrace();
+            }
+        }
+
         /* 
+        
         
         SINKS 
 
