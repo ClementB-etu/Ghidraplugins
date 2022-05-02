@@ -20,6 +20,7 @@
 
 
 import ghidra.app.script.GhidraScript;
+import ghidra.app.decompiler as decomp;
 
 
 import ghidra.program.model.address.Address;
@@ -50,9 +51,15 @@ public class ThirdScript extends GhidraScript {
             return;
         }
 
+        /* 
+            ITERATES THROUGH FUNCTIONS 
+        */
 
         FunctionManager funmanag = currentProgram.getFunctionManager();
         FunctionIterator funit = funmanag.getFunctions(true);
+        /* AFTER 
+         FunctionIterator funit = funmanag.getExternalFunctions(true);
+        */
 
         while (funit.hasNext()) {
             Function f = funit.next();
@@ -60,6 +67,33 @@ public class ThirdScript extends GhidraScript {
             f.setComment("Commented " + f.getName() + " at " + f.getEntryPoint());
             
         }
+
+        /* 
+            ITERATES THROUGH INSTRUCTION
+        */
+            
+        /* 
+        
+        SINKS 
+
+        sinks = [					
+        "strcpy",
+        "memcpy",
+        "gets",
+        "memmove",
+        "scanf",
+        "strcpyA", 
+        "strcpyW", 
+        "wcscpy", 
+        "_tcscpy", 
+        "_mbscpy", 
+        "StrCpy", 
+        "StrCpyA",
+        "lstrcpyA",
+        "lstrcpy", 
+	    ]
+
+        */
 
     }
 
