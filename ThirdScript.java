@@ -55,23 +55,25 @@ public class ThirdScript extends GhidraScript {
 
         /* 
             ITERATES THROUGH FUNCTIONS 
-        */
+
 
         FunctionManager funmanag = currentProgram.getFunctionManager();
         FunctionIterator funit = funmanag.getFunctions(true);
-        /* AFTER 
-         FunctionIterator funit = funmanag.getExternalFunctions(true);
+
+            //AFTER 
+            //FunctionIterator funit = funmanag.getExternalFunctions(true);
+            
+
+            while (funit.hasNext()) {
+                Function f = funit.next();
+                println("funit : " + f.getName());
+                f.setComment("Commented " + f.getName() + " at " + f.getEntryPoint());
+                
+            }
         */
 
-        while (funit.hasNext()) {
-            Function f = funit.next();
-            //println("funit : " + f.getName());
-            //f.setComment("Commented " + f.getName() + " at " + f.getEntryPoint());
-            
-        }
-
         /* 
-            ITERATES THROUGH INSTRUCTION
+            ITERATES THROUGH INSTRUCTIONS
         */
             
         Listing listing = currentProgram.getListing();
@@ -83,13 +85,11 @@ public class ThirdScript extends GhidraScript {
 
             Address addrinst = instr.getAddress();
             String mnemo = instr.getMnemonicString();
-            String label = instr.getLabel();
-            Object[] ops = instr.getOpObjects(0); // 0 : address
 
 
             try
             { 
-                println("mnemo : " + mnemo);
+                println("[INSTR] " + mnemo + " at " + addrinst);
 
                 Address[] susaddr = instr.getDefaultFlows();
                
@@ -99,7 +99,7 @@ public class ThirdScript extends GhidraScript {
                 {
                     Function susfun = listing.getFunctionAt(susaddr[i]);
                     String susname = susfun.getName();
-                    println("Name of targeted function : " + susname + " at " + susaddr[i]);
+                    println("[USES] " + susname + " at " + susaddr[i]);
                 }
 
 
