@@ -20,29 +20,19 @@
 //@toolbar    world.png
 
 
-import generic.continues.RethrowContinuesFactory;
+import java.util.HashMap;
+import java.util.Map;
 
+import generic.continues.RethrowContinuesFactory;
 import ghidra.app.script.GhidraScript;
+import ghidra.app.util.bin.BinaryReader;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.bin.MemoryByteProvider;
 import ghidra.app.util.bin.format.elf.ElfHeader;
-import ghidra.app.util.bin.format.elf.ElfProgramHeader;
-import ghidra.app.util.bin.BinaryReader;
-import ghidra.app.util.bin.format.coff.CoffSectionHeader;
-import ghidra.app.util.bin.format.coff.CoffFileHeader;
-
 import ghidra.program.model.address.Address;
 import ghidra.program.model.mem.Memory;
 import ghidra.program.model.mem.MemoryBlock;
-
-
 import ghidra.util.Msg;
-import java.lang.Math;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Set;
-import java.util.Iterator;
 
 public class SecondScript extends GhidraScript {
 
