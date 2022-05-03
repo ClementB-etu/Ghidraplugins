@@ -62,7 +62,7 @@ public class SecondScript extends GhidraScript {
                 Récupération des infos utiles (taille de l'eflHeader, nombre de program header ...)
                 BinaryReader pour lire les `sizeelfheader` bytes et calculer l'entropie sur cette section
                 
-             */
+            */
 
             ElfHeader elfheader = ElfHeader.createElfHeader(RethrowContinuesFactory.INSTANCE,  byteProvider);
 
@@ -156,22 +156,22 @@ public class SecondScript extends GhidraScript {
 
             */
 
-            double moy = 0.0;
+            double moytmp = 0.0;
 
             for (Map.Entry<String, Double> entry : results.entrySet()) {
                 
                 double entropy = entry.getValue();
                 String name = entry.getKey();
-                moy += entropy;
+                moytmp += entropy;
 
             }
 
-            moy = moy / results.size();
+            moytmp = moytmp / results.size();
 
             for (Map.Entry<String, Double> entry : results.entrySet()) {
                 
                 double entropy = entry.getValue();
-                double ecartcarre = Math.pow((entropy-moy),2);
+                double ecartcarre = Math.pow((entropy-moytmp),2);
                 String name = entry.getKey();
 
                 resultsEcartcarre.put(name,ecartcarre);
@@ -188,7 +188,7 @@ public class SecondScript extends GhidraScript {
 
                 //max est l'écartcarré max d'une section à la moyenne si cette section à une entropie supérieure à la moyenne
 
-                if ((ecartcarre > maxtmp) && (results.get(name) > moy)) {
+                if ((ecartcarre > maxtmp) && (results.get(name) > moytmp)) {
 
                     maxtmp = ecartcarre;
 
@@ -198,11 +198,13 @@ public class SecondScript extends GhidraScript {
             }
 
             final double max = maxtmp;
+            final double moy = moytmp;
             ecarttype = ecarttype / resultsEcartcarre.size();
 
             resultsEcartcarre.keySet().forEach((key) -> {
                 if (resultsEcartcarre.get(key) == max) {
                     println("This section : " + key + " might be malicious ! (entropy : " + results.get(key) + " )" );
+                    println(" Mean : " + moy );
                 }
             });
 
@@ -235,10 +237,7 @@ public class SecondScript extends GhidraScript {
                 continue;
             double p = c / total;
 
-            /* Compute entropy per bit in byte.
-              To compute entropy per byte compute log with base 256 = log(p)/log(256).
-            */
-            entropy -= p * Math.log(p) / Math.log(2);
+            entropy -= p * Math.log(p) / Math.log(256);
         }
 
         return entropy;
