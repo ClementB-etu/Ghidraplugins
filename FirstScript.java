@@ -66,6 +66,7 @@ public class FirstScript extends GhidraScript {
 		//CALCUL ENTROPIE
 
 		try {
+			
 			Listing listing = currentProgram.getListing();
 			InstructionIterator instructions = listing.getInstructions(true);
 
