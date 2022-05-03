@@ -230,8 +230,11 @@ public class SecondScript extends GhidraScript {
         double entropy = 0;
         double total = f.length;
 
-        for (byte b : f)
+        for (byte b : f) 
+        {
             counts[b + 128]++;
+        }
+        
         for (int c : counts) {
             if (c == 0)
                 continue;
