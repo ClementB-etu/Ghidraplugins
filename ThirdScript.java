@@ -89,6 +89,15 @@ public class ThirdScript extends GhidraScript {
 
             try
             { 
+
+                if (mnemo.startsWith("CALL"))
+                {
+                    println("CARE CALL !");
+                } else if (mnemo.startsWith("XOR"))
+                {
+                    println("CARE XOR !");
+                }
+
                 println("[INSTR] " + mnemo + " at " + addrinst);
 
                 Address[] susaddr = instr.getDefaultFlows();
