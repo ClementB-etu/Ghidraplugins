@@ -74,9 +74,10 @@ public class SecondScript extends GhidraScript {
 
             BinaryReader reader = elfheader.getReader();
             byte[] byteselfH = reader.readNextByteArray(sizeelfheader);
-            String elfh = new String(java.util.Arrays.toString(byteselfH));
 
-            results.put("ELFHeader",getShannonEntropy(elfh));
+            //String elfh = new String(java.util.Arrays.toString(byteselfH));
+            //results.put("ELFHeader",getShannonEntropy(elfh));
+            results.put("ELFHeader",entropy(byteselfH));
 
             /* 
                 Program headers
@@ -105,10 +106,11 @@ public class SecondScript extends GhidraScript {
 
             for (Map.Entry<Integer, byte[]> entry : mapProgHeaders.entrySet()) {
 
-                String s = new String(java.util.Arrays.toString(entry.getValue()));
-                results.put(("ProgramHeader" + entry.getKey()),getShannonEntropy(s));
-
-            }
+                //String s = new String(java.util.Arrays.toString(entry.getValue()));
+                //results.put(("ProgramHeader" + entry.getKey()),getShannonEntropy(s));
+                
+                results.put(("ProgramHeader" + entry.getKey()),entropy(entry.getValue()));         
+           }
 
             /*
 
@@ -136,8 +138,11 @@ public class SecondScript extends GhidraScript {
 
             for (Map.Entry<String, byte[]> entry : mapSecBlocks.entrySet()) {
 
-                String s = new String(java.util.Arrays.toString(entry.getValue()));
-                results.put(entry.getKey(),getShannonEntropy(s));
+                //String s = new String(java.util.Arrays.toString(entry.getValue()));
+                //results.put(entry.getKey(),getShannonEntropy(s));
+
+                results.put(entry.getKey(),entropy(entry.getValue()));
+
 
             }
 
@@ -157,8 +162,6 @@ public class SecondScript extends GhidraScript {
                 
                 double entropy = entry.getValue();
                 String name = entry.getKey();
-
-                //println(entropy + " ( "+ name + " )" );
                 moy += entropy;
 
             }
@@ -215,36 +218,30 @@ public class SecondScript extends GhidraScript {
 
     /* 
 
-        Méthodes pour le calcul de l'entropie de Shannon avec une chaine de caractère en paramètre
+        Méthode pour le calcul de l'entropie de Shannon avec une chaine de caractère en paramètre
 
     */
 
-    public static double log2(double x) {
-		return (double) (Math.log(x) / Math.log(2));
-	}
 
-	public double getShannonEntropy(String s) {
-		if (s == null) {
-			return 0.0;
-		}
-		int n = 0;
-		Map<Character, Integer> occ = new HashMap<>();
-		for (int c_ = 0; c_ < s.length(); ++c_) {
-			char cx = s.charAt(c_);
-			if (occ.containsKey(cx)) {
-				occ.put(cx, occ.get(cx) + 1);
-			} else {
-				occ.put(cx, 1);
-			}
-			++n;
-		}
-		double e = 0.0;
-		for (Map.Entry<Character, Integer> entry : occ.entrySet()) {
-			char cx = entry.getKey();
-			double p = (double) entry.getValue() / n;
-			e += p * log2(p);
-		}
-		return -e;
-	}
+    public static double entropy(byte[] f) {
+        int counts[] = new int[256];
+        double entropy = 0;
+        double total = f.length;
+
+        for (byte b : f)
+            counts[b + 128]++;
+        for (int c : counts) {
+            if (c == 0)
+                continue;
+            double p = c / total;
+
+            /* Compute entropy per bit in byte.
+              To compute entropy per byte compute log with base 256 = log(p)/log(256).
+            */
+            entropy -= p * Math.log(p) / Math.log(2);
+        }
+
+        return entropy;
+    }
 
 }
