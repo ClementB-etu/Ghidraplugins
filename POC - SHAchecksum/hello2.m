@@ -1,6 +1,4 @@
-
 c7 c0 21 0A 00 00       #moving "!\n" into eax OTHER VERSION
-
 a3	0c 10 00 06			#moving eax into first memory location
 b8 	6f 72 6c 64			#moving "orld" into eax
 a3	08 10 00 06			#moving eax into next memory location
