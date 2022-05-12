@@ -16,12 +16,11 @@ def main
 # 	Read Each Instruction From Input		#
 #--------------------------------------------
 
-	$list = []
 
 	while asm = Readline.readline('irasm > ', true)
 		
 		asm = asm.chomp							#Get assembly instruction
-		$list = []								#Resetting the list of known
+		$list = []								#creatting / Resetting the list of known
 		if /(quit|(?<!s)exit)/i.match(asm)		#If it's quit or exit
 			exit								#	Exit the script
 		end										#Otherwise start looking for instruction names
@@ -37,18 +36,18 @@ def main
 	case
 		when asm.match(/^aaa/i)
 			#ASCII Adjust After Addition
-			printf("%-34s%-15s\n\n", '37', 'aaa')
+			//#printf("%-34s%-15s\n\n", '37', 'aaa')
 		when asm.match(/^aad/i)
 			#ASCII Adjust AX Before Division
-			printf("%-34s%-15s\n\n", 'D50A', 'aad')
-			printf("%-34s%-15s\n\n", 'D5XX', 'aad imm8 (Machine Code Only, XX is base)')
+			##printf("%-34s%-15s\n\n", 'D50A', 'aad')
+			#printf("%-34s%-15s\n\n", 'D5XX', 'aad imm8 (Machine Code Only, XX is base)')
 		when asm.match(/^aam/i)
 			#ASCII Adjust AX After Multiply
-			printf("%-34s%-15s\n\n", 'D40A', 'aam')
-			printf("%-34s%-15s\n\n", 'D4XX', 'aam imm8 (Machine Code Only, XX is base)')	
+			#printf("%-34s%-15s\n\n", 'D40A', 'aam')
+			#printf("%-34s%-15s\n\n", 'D4XX', 'aam imm8 (Machine Code Only, XX is base)')	
 		when asm.match(/^aas/i)
 			#ASCII Adjust AL After Subtraction
-			printf("%-34s%-15s\n\n", '3F', 'aas')
+			#printf("%-34s%-15s\n\n", '3F', 'aas')
 		when asm.match(/^adc[^x]/i)
 			#Add with Carry
 			if alimm8(asm, '14', '80D0')	
@@ -109,32 +108,32 @@ def main
 			else nasm(asm) end
 		when asm.match(/^cbw/i)
 			#Convert Byte to Word
-			printf("%-34s%-15s\n\n", '6698', 'cbw')
+			#printf("%-34s%-15s\n\n", '6698', 'cbw')
 		when asm.match(/^cflush\s/i)
 			#Flush Case Line
 			if opmodrm(asm, '0FAE', '7')	#Actually FF, but gets converted just fine
 			else nasm(asm) end
 		when asm.match(/^cwde/i)
 			#Convert Word to Doubleword
-			printf("%-34s%-15s\n\n", '98', 'cwde')
+			#printf("%-34s%-15s\n\n", '98', 'cwde')
 		when asm.match(/^clac/i)
 			#Clear AC Flag in EFLAGS Register
-			printf("%-34s%-15s\n\n", '0F01CA', 'clac')
+			#printf("%-34s%-15s\n\n", '0F01CA', 'clac')
 		when asm.match(/^clc/i)
 			#Clear Carry Flag
-			printf("%-34s%-15s\n\n", 'F8', 'clc')
+			#printf("%-34s%-15s\n\n", 'F8', 'clc')
 		when asm.match(/^cld/i)
 			#Clear Direction Flag
-			printf("%-34s%-15s\n\n", 'FC', 'cld')
+			#printf("%-34s%-15s\n\n", 'FC', 'cld')
 		when asm.match(/^cli/i)
 			#Clear Interupt Flag
-			printf("%-34s%-15s\n\n", 'FA', 'cli')
+			#printf("%-34s%-15s\n\n", 'FA', 'cli')
 		when asm.match(/^clts/i)
 			#Clear Task-Switched Flag in CR0
-			printf("%-34s%-15s\n\n", '0F06', 'clts')
+			#printf("%-34s%-15s\n\n", '0F06', 'clts')
 		when asm.match(/^cmc/i)
 			#Complement Carry Flag
-			printf("%-34s%-15s\n\n", 'F5', 'cmc')
+			#printf("%-34s%-15s\n\n", 'F5', 'cmc')
 		when asm.match(/^cmova\s/i)
 			#Move if Above
 			if modrmmodrm(asm, '0F47')		
@@ -261,36 +260,36 @@ def main
 			else nasm(asm) end
 		when asm.match(/^cmpsb/i)
 			#Compare String Operands (Byte)
-			printf("%-34s%-15s\n\n", 'A6', 'cmpsb')
+			#printf("%-34s%-15s\n\n", 'A6', 'cmpsb')
 		when asm.match(/^cmpsw/i)
 			#Compare String Operands (Word)
-			printf("%-34s%-15s\n\n", '66A7', 'cmpsw (WORD PTR ds:[esi],WORD PTR es:[edi])')
+			#printf("%-34s%-15s\n\n", '66A7', 'cmpsw (WORD PTR ds:[esi],WORD PTR es:[edi])')
 		when asm.match(/^cmpsd/i)
 			#Compare String Operands (Doubleword)
-			printf("%-34s%-15s\n\n", 'A7', 'cmpsd (DWORD PTR ds:[esi],DWORD PTR es:[edi])')
+			#printf("%-34s%-15s\n\n", 'A7', 'cmpsd (DWORD PTR ds:[esi],DWORD PTR es:[edi])')
 		when asm.match(/^cmpxchg/i)
 			#Compare Two Operands
 			if modrmmodrm(asm, '0FB0')			
 			else nasm(asm) end
 		when asm.match(/^cpuid/i)
 			#CPU Identification
-			printf("%-34s%-15s\n\n", '0FA2', 'cpuid')
+			#printf("%-34s%-15s\n\n", '0FA2', 'cpuid')
 		when asm.match(/^crc32\s/i)
 			#Accumulate CRC32 Value
 			if modrmmodrm(asm, 'F20F38F1')		
 			else nasm(asm) end
 		when asm.match(/^cwd/i)
 			#Convert Word to Doubleword
-			printf("%-34s%-15s\n\n", '6699', 'cwd')
+			#printf("%-34s%-15s\n\n", '6699', 'cwd')
 		when asm.match(/^cdq/i)
 			#Convert Doubleword to Quadword
-			printf("%-34s%-15s\n\n", '99', 'cdq')
+			#printf("%-34s%-15s\n\n", '99', 'cdq')
 		when asm.match(/^daa/i)
 			#Decimal Adjust AL after Addition
-			printf("%-34s%-15s\n\n", '27', 'daa')
+			#printf("%-34s%-15s\n\n", '27', 'daa')
 		when asm.match(/^das/i)
 			#Decimal Adjust AL after Subtraction
-			printf("%-34s%-15s\n\n", '2F', 'das')
+			#printf("%-34s%-15s\n\n", '2F', 'das')
 		when asm.match(/^dec/i)
 			#Compare Two Operands
 			if opmodrm(asm, 'FE', '1')			
@@ -301,154 +300,154 @@ def main
 			else nasm(asm) end
 		when asm.match(/^emms/i)
 			#Empty MMX Technology State
-			printf("%-34s%-15s\n\n", '0F77', 'emms')
+			#printf("%-34s%-15s\n\n", '0F77', 'emms')
 		when asm.match(/^enter/i)
 			if imm16imm8(asm, 'C8')		
 			else nasm(asm) end
 		when asm.match(/^f2xm1/i)
 			#Compute 2^x-1
-			printf("%-34s%-15s\n\n", 'D9F0', 'f2xm1')
+			#printf("%-34s%-15s\n\n", 'D9F0', 'f2xm1')
 		when asm.match(/^fabs/i)
 			#Absolute Value
-			printf("%-34s%-15s\n\n", 'D9E1', 'fabs')
+			#printf("%-34s%-15s\n\n", 'D9E1', 'fabs')
 		when asm.match(/^faddp/i)
 			#Floating Point Add
-			printf("%-34s%-15s\n\n", 'DEC1', 'faddp (faddp  st(1),st)')
+			#printf("%-34s%-15s\n\n", 'DEC1', 'faddp (faddp  st(1),st)')
 		when asm.match(/^fchs/i)
 			#Change Sign
-			printf("%-34s%-15s\n\n", 'D9E0', 'fchs')
+			#printf("%-34s%-15s\n\n", 'D9E0', 'fchs')
 		when asm.match(/^fclex/i)
 			#Clear Exceptions
-			printf("%-34s%-15s\n\n", '9BDBE2', 'fclex')
+			#printf("%-34s%-15s\n\n", '9BDBE2', 'fclex')
 		when asm.match(/^fnclex/i)
 			#Clear Exceptions
-			printf("%-34s%-15s\n\n", 'DBE2', 'fnclex')
+			#printf("%-34s%-15s\n\n", 'DBE2', 'fnclex')
 		when asm.match(/^fcom$/i)
 			#Compare Floating Point Values
-			printf("%-34s%-15s\n\n", 'D8D1', 'fcom (st(1))')
+			#printf("%-34s%-15s\n\n", 'D8D1', 'fcom (st(1))')
 		when asm.match(/^fcomp$/i)
 			#Compare Floating Point Values and Pop
-			printf("%-34s%-15s\n\n", 'D8D9', 'fcomp (st(1))')
+			#printf("%-34s%-15s\n\n", 'D8D9', 'fcomp (st(1))')
 		when asm.match(/^fcompp/i)
 			#Compare Floating Point Values and Pop Twice
-			printf("%-34s%-15s\n\n", 'DED9', 'fcompp')
+			#printf("%-34s%-15s\n\n", 'DED9', 'fcompp')
 		when asm.match(/^fcos/i)
 			#Cosine
-			printf("%-34s%-15s\n\n", 'D9FF', 'fcos')
+			#printf("%-34s%-15s\n\n", 'D9FF', 'fcos')
 		when asm.match(/^fdecstp/i)
 			#Decrement Stack-Top Pointer
-			printf("%-34s%-15s\n\n", 'D9F6', 'fdecstp')
+			#printf("%-34s%-15s\n\n", 'D9F6', 'fdecstp')
 		when asm.match(/^fdivp/i)
 			#Divide
-			printf("%-34s%-15s\n\n", 'DEF9', 'fdivp (st(1),st)')
+			#printf("%-34s%-15s\n\n", 'DEF9', 'fdivp (st(1),st)')
 		when asm.match(/^fdivrp/i)
 			#Reverese Divide
-			printf("%-34s%-15s\n\n", 'DEF1', 'fdivrp (st(1),st)')
+			#printf("%-34s%-15s\n\n", 'DEF1', 'fdivrp (st(1),st)')
 		when asm.match(/^fincstp/i)
 			#Increment Stack-Top Pointer
-			printf("%-34s%-15s\n\n", 'D9F7', 'fincstp')
+			#printf("%-34s%-15s\n\n", 'D9F7', 'fincstp')
 		when asm.match(/^finit/i)
 			#Initialize Floating-Point Unit
-			printf("%-34s%-15s\n\n", '9BDBE3', 'finit')
+			#printf("%-34s%-15s\n\n", '9BDBE3', 'finit')
 		when asm.match(/^fninit/i)
 			#Initialize Floating-Point Unit
-			printf("%-34s%-15s\n\n", 'DBE3', 'fninit')
+			#printf("%-34s%-15s\n\n", 'DBE3', 'fninit')
 		when asm.match(/^fld1$/i)
 			#Load Constant (Push +1.0 onto the FPU register stack)
-			printf("%-34s%-15s\n\n", 'D9E8', 'fld1')
+			#printf("%-34s%-15s\n\n", 'D9E8', 'fld1')
 		when asm.match(/^fldl2t$/i)
 			#Load Constant (Push log2,10 onto the FPU register stack)
-			printf("%-34s%-15s\n\n", 'D9E9', 'fldl2t')				
+			#printf("%-34s%-15s\n\n", 'D9E9', 'fldl2t')				
 		when asm.match(/^fldl2e$/i)
 			#Load Constant (Push log2,e onto the FPU register stack)
-			printf("%-34s%-15s\n\n", 'D9EA', 'fldl2e')
+			#printf("%-34s%-15s\n\n", 'D9EA', 'fldl2e')
 		when asm.match(/^fldpi$/i)
 			#Load Constant (Push pi onto the FPU register stack)
-			printf("%-34s%-15s\n\n", 'D9EB', 'fldpi')
+			#printf("%-34s%-15s\n\n", 'D9EB', 'fldpi')
 		when asm.match(/^fldlg2$/i)
 			#Load Constant (Push log10,2 onto the FPU register stack)
-			printf("%-34s%-15s\n\n", 'D9EC', 'fldlg2')
+			#printf("%-34s%-15s\n\n", 'D9EC', 'fldlg2')
 		when asm.match(/^fldln2$/i)
 			#Load Constant (Push log e,2 onto the FPU register stack)
-			printf("%-34s%-15s\n\n", 'D9ED', 'fldln2')
+			#printf("%-34s%-15s\n\n", 'D9ED', 'fldln2')
 		when asm.match(/^fldz$/i)
 			#Load Constant (Push +0.0 onto the FPU register stack)
-			printf("%-34s%-15s\n\n", 'D9EE', 'fldz')
+			#printf("%-34s%-15s\n\n", 'D9EE', 'fldz')
 		when asm.match(/^fmulp/i)
 			#Multiply
-			printf("%-34s%-15s\n\n", 'DEC9', 'fmulp (st(1),st)')
+			#printf("%-34s%-15s\n\n", 'DEC9', 'fmulp (st(1),st)')
 		when asm.match(/^fnop$/i)
 			#Floating Point NOP
-			printf("%-34s%-15s\n\n", 'D9D0', 'fnop')
+			#printf("%-34s%-15s\n\n", 'D9D0', 'fnop')
 		when asm.match(/^fpatan$/i)
 			#Partial Arctangent
-			printf("%-34s%-15s\n\n", 'D9F3', 'fpatan')
+			#printf("%-34s%-15s\n\n", 'D9F3', 'fpatan')
 		when asm.match(/^fprem$/i)
 			#Partial Remainder
-			printf("%-34s%-15s\n\n", 'D9F8', 'fprem')
+			#printf("%-34s%-15s\n\n", 'D9F8', 'fprem')
 		when asm.match(/^fprem1$/i)
 			#Partial Remainder
-			printf("%-34s%-15s\n\n", 'D9F5', 'fprem1')
+			#printf("%-34s%-15s\n\n", 'D9F5', 'fprem1')
 		when asm.match(/^fptan$/i)
 			#Partial Tangent
-			printf("%-34s%-15s\n\n", 'D9F2', 'fptan')
+			#printf("%-34s%-15s\n\n", 'D9F2', 'fptan')
 		when asm.match(/^frndint$/i)
 			#Round to Integer
-			printf("%-34s%-15s\n\n", 'D9FC', 'frndint')
+			#printf("%-34s%-15s\n\n", 'D9FC', 'frndint')
 		when asm.match(/^fscale$/i)
 			#Scale
-			printf("%-34s%-15s\n\n", 'D9FD', 'fscale')
+			#printf("%-34s%-15s\n\n", 'D9FD', 'fscale')
 		when asm.match(/^fsin$/i)
 			#Sine
-			printf("%-34s%-15s\n\n", 'D9FE', 'fsin')
+			#printf("%-34s%-15s\n\n", 'D9FE', 'fsin')
 		when asm.match(/^fsincos$/i)
 			#Sine and Cosine
-			printf("%-34s%-15s\n\n", 'D9FB', 'fsincos')
+			#printf("%-34s%-15s\n\n", 'D9FB', 'fsincos')
 		when asm.match(/^fsqrt$/i)
 			#Square Root
-			printf("%-34s%-15s\n\n", 'D9FA', 'fsqrt')
+			#printf("%-34s%-15s\n\n", 'D9FA', 'fsqrt')
 		when asm.match(/^fstswax$/i)
 			#Store x87 FPU Status Word
-			printf("%-34s%-15s\n\n", '9BDFE0', 'fstsw ax')
+			#printf("%-34s%-15s\n\n", '9BDFE0', 'fstsw ax')
 		when asm.match(/^fnstswax$/i)
 			#Store x87 FPU Status Word (without checking for pending unmasked floating-point exceptions)
-			printf("%-34s%-15s\n\n", 'DFE0', 'fnstsw ax')
+			#printf("%-34s%-15s\n\n", 'DFE0', 'fnstsw ax')
 		when asm.match(/^fsubp$/i)
 			#Subtract
-			printf("%-34s%-15s\n\n", 'DEE9', 'fsubp')
+			#printf("%-34s%-15s\n\n", 'DEE9', 'fsubp')
 		when asm.match(/^fsubrp$/i)
 			#Reverse Subtract
-			printf("%-34s%-15s\n\n", 'DEE1', 'fsubrp')
+			#printf("%-34s%-15s\n\n", 'DEE1', 'fsubrp')
 		when asm.match(/^ftst$/i)
 			#Test
-			printf("%-34s%-15s\n\n", 'D9E4', 'ftst')
+			#printf("%-34s%-15s\n\n", 'D9E4', 'ftst')
 		when asm.match(/^fucom$/i)
 			#Unordered Compare Floating Point Values
-			printf("%-34s%-15s\n\n", 'DDE1', 'fucom (st(1))')
+			#printf("%-34s%-15s\n\n", 'DDE1', 'fucom (st(1))')
 		when asm.match(/^fucomp$/i)
 			#Unordered Compare Floating Point Values and pop register stack
-			printf("%-34s%-15s\n\n", 'DDE9', 'fucomp (st(1))')
+			#printf("%-34s%-15s\n\n", 'DDE9', 'fucomp (st(1))')
 		when asm.match(/^fucompp$/i)
 			#Unordered Compare Floating Point Values and pop register stack twice
-			printf("%-34s%-15s\n\n", 'DAE9', 'fucompp')
+			#printf("%-34s%-15s\n\n", 'DAE9', 'fucompp')
 		when asm.match(/^fxam$/i)
 			#Examine ModR/M
-			printf("%-34s%-15s\n\n", 'D9E5', 'fxam')
+			#printf("%-34s%-15s\n\n", 'D9E5', 'fxam')
 		when asm.match(/^fxch$/i)
 			#Exchange Register Contents
-			printf("%-34s%-15s\n\n", 'D9C9', 'fxch (st(1))')
+			#printf("%-34s%-15s\n\n", 'D9C9', 'fxch (st(1))')
 		when asm.match(/^fxtract$/i)
 			#Extract Exponent and Significand
-			printf("%-34s%-15s\n\n", 'D9F4', 'fxtract') 
+			#printf("%-34s%-15s\n\n", 'D9F4', 'fxtract') 
 		when asm.match(/^fyl2x$/i)
 			#Compute y * log2, x
-			printf("%-34s%-15s\n\n", 'D9F1', 'fyl2x')
+			#printf("%-34s%-15s\n\n", 'D9F1', 'fyl2x')
 		when asm.match(/^fyl2xp1$/i)
 			#Compute y * log2(x+1)
-			printf("%-34s%-15s\n\n", 'D9F9', 'fyl2xp1')
+			#printf("%-34s%-15s\n\n", 'D9F9', 'fyl2xp1')
 		when asm.match(/^hlt$/i)
 			#Halt
-			printf("%-34s%-15s\n\n", 'F4', 'hlt')
+			#printf("%-34s%-15s\n\n", 'F4', 'hlt')
 		when asm.match(/^idiv\s/i)
 			#Compare Two Operands
 			if opmodrm(asm, 'F6', '7')			
@@ -473,29 +472,29 @@ def main
 			else nasm(asm) end
 		when asm.match(/^insb$/i)
 			#Input from Port to String (Byte)
-			printf("%-34s%-15s\n\n", '6C', 'insb (BYTE PTR es:[edi],dx)')
+			#printf("%-34s%-15s\n\n", '6C', 'insb (BYTE PTR es:[edi],dx)')
 		when asm.match(/^insw$/i)
 			#Input from Port to String (Word)
-			printf("%-34s%-15s\n\n", '666D', 'insw (WORD PTR es:[edi],dx)')
+			#printf("%-34s%-15s\n\n", '666D', 'insw (WORD PTR es:[edi],dx)')
 		when asm.match(/^insd$/i)
 			#Input from Port to String (DWword)
-			printf("%-34s%-15s\n\n", '6D', 'insd (DWORD PTR es:[edi],dx)')
+			#printf("%-34s%-15s\n\n", '6D', 'insd (DWORD PTR es:[edi],dx)')
 		when asm.match(/^into$/i)
 			#Call to Interrupt Procedure
-			printf("%-34s%-15s\n\n", 'CE', 'into')
+			#printf("%-34s%-15s\n\n", 'CE', 'into')
 		when asm.match(/^invd$/i)
 			#Invalidate Internal Caches
-			printf("%-34s%-15s\n\n", '0F08', 'invd')
+			#printf("%-34s%-15s\n\n", '0F08', 'invd')
 		when asm.match(/^invlpg\s/i)
 			#Invalidate TLB Entries
 			if opmodrm(asm, '0F01', '7')			
 			else nasm(asm) end
 		when asm.match(/^iretw$/i)
 			#Interrupt Return (Word)
-			printf("%-34s%-15s\n\n", '66CF', 'iretw')
+			#printf("%-34s%-15s\n\n", '66CF', 'iretw')
 		when asm.match(/^iretd?$/i)
 			#Interrupt Return, this applies for IRET and IRTED
-			printf("%-34s%-15s\n\n", 'CF', asm)
+			#printf("%-34s%-15s\n\n", 'CF', asm)
 		when asm.match(/^ja\s/i)
 			#Jump if Above
 			if jcc(asm, '77')		
@@ -620,17 +619,17 @@ def main
 			else nasm(asm) end
 		when asm.match(/^lahf$/i)
 			#Load Status Flags into AH Register
-			printf("%-34s%-15s\n\n", '9F', 'lahf')
+			#printf("%-34s%-15s\n\n", '9F', 'lahf')
 		when asm.match(/^lea\s/i)
 			#lea
 			if modrmmodrm(asm, '8D')		
 			else nasm(asm) end
 		when asm.match(/^leave$/i)
 			#High Level Procedure Exit
-			printf("%-34s%-15s\n\n", 'C9', 'leave') 
+			#printf("%-34s%-15s\n\n", 'C9', 'leave') 
 		when asm.match(/^leavew$/i)
 			#High Level Procedure Exit (Word)
-			printf("%-34s%-15s\n\n", '66C9', 'leavew')
+			#printf("%-34s%-15s\n\n", '66C9', 'leavew')
 		when asm.match(/^lfence$/i)
 			#Load Fence
 			fence('lfence', '0FAE', 'E8')
@@ -646,13 +645,13 @@ def main
 			lock(asm)					#Find a way to handle
 		when asm.match(/^lodsb$/i)
 			#Load String (Byte)
-			printf("%-34s%-15s\n\n", 'AC', 'lodsb')
+			#printf("%-34s%-15s\n\n", 'AC', 'lodsb')
 		when asm.match(/^lodsw$/i)
 			#Load String (Word)
-			printf("%-34s%-15s\n\n", '66AD', 'lodsw')
+			#printf("%-34s%-15s\n\n", '66AD', 'lodsw')
 		when asm.match(/^lodsd$/i)
 			#Load String (Doubleword)
-			printf("%-34s%-15s\n\n", 'AD', 'lodsd')
+			#printf("%-34s%-15s\n\n", 'AD', 'lodsd')
 		when asm.match(/^loop\s/i)
 			#Loop
 			if rel8(asm, 'E2')		
@@ -679,22 +678,22 @@ def main
 			fence('mfence', '0FAE', 'F0')
 		when asm.match(/^monitor$/i)
 			#Set Up Monitor Address
-			printf("%-34s%-15s\n\n", '0F01C8', 'monitor')
+			#printf("%-34s%-15s\n\n", '0F01C8', 'monitor')
 		when asm.match(/^movsb$/i)
 			#Move Data from String to String (Byte)
-			printf("%-34s%-15s\n\n", 'A4', 'movsb')
+			#printf("%-34s%-15s\n\n", 'A4', 'movsb')
 		when asm.match(/^movsw$/i)
 			#Move Data from String to String (Word)
-			printf("%-34s%-15s\n\n", '66A5', 'movsw')
+			#printf("%-34s%-15s\n\n", '66A5', 'movsw')
 		when asm.match(/^movsd$/i)
 			#Move Data from String to String (Doubleword)
-			printf("%-34s%-15s\n\n", 'A5', 'movsd')
+			#printf("%-34s%-15s\n\n", 'A5', 'movsd')
 		when asm.match(/^mwait$/i)
 			#Monitor Wait
-			printf("%-34s%-15s\n\n", '0F01C9', 'mwait')
+			#printf("%-34s%-15s\n\n", '0F01C9', 'mwait')
 		when asm.match(/^nop$/i)
 			#No Operation
-			printf("%-34s%-15s\n\n", '90', 'nop')
+			#printf("%-34s%-15s\n\n", '90', 'nop')
 		when asm.match(/^nop\s/i)
 			#No Operation as a 'multibyte asm'
 			if opmodrm(asm, '0F1F', '0')
@@ -709,36 +708,36 @@ def main
 			else nasm(asm) end
 		when asm.match(/^outsb$/i)
 			#Output String to Port (Byte)
-			printf("%-34s%-15s\n\n", '6E', 'outsb')
+			#printf("%-34s%-15s\n\n", '6E', 'outsb')
 		when asm.match(/^outsw$/i)
 			#Output String to Port (Word)
-			printf("%-34s%-15s\n\n", '666F', 'outsw')
+			#printf("%-34s%-15s\n\n", '666F', 'outsw')
 		when asm.match(/^outsd$/i)
 			#Output String to Port (Doubleword)
-			printf("%-34s%-15s\n\n", '6F', 'outsd') 
+			#printf("%-34s%-15s\n\n", '6F', 'outsd') 
 		when asm.match(/^pause$/i)
 			#Spin Loop Hint
-			printf("%-34s%-15s\n\n", 'F390', 'pause')
+			#printf("%-34s%-15s\n\n", 'F390', 'pause')
 		when asm.match(/^pop\s/i)
 			#Compare Two Operands
 			if opmodrm(asm, '8F', '0')		
 			else nasm(asm) end
 		when asm.match(/^popaw$/i)
 			#Pop All General-Purpose Registers (Word)
-			printf("%-34s%-15s\n\n", '6661', 'popaw')
+			#printf("%-34s%-15s\n\n", '6661', 'popaw')
 		when asm.match(/^popad?$/i)
 			#Pop All General-Purpose Registers
-			printf("%-34s%-15s\n\n", '61', asm) 
+			#printf("%-34s%-15s\n\n", '61', asm) 
 		when asm.match(/^popcnt/i)
 			#Return the Count of Number of Bits set to 1
 			if modrmmodrm(asm, 'F30FB8')		
 			else nasm(asm) end
 		when asm.match(/^popfw$/i)
 			#Pop Stack into EFLAGS Registers (Word)
-			printf("%-34s%-15s\n\n", '669D', 'popfw')
+			#printf("%-34s%-15s\n\n", '669D', 'popfw')
 		when asm.match(/^popfd?$/i)
 			#Pop Stack into EFLAGS Registers
-			printf("%-34s%-15s\n\n", '9D', asm)
+			#printf("%-34s%-15s\n\n", '9D', asm)
 		when asm.match(/^prefetch0\s/i)
 			#Compare Two Operands
 			if opmodrm(asm, '0F18', '1')		
@@ -770,16 +769,16 @@ def main
 			else nasm(asm) end
 		when asm.match(/^pushaw$/i)
 			#Push All General-Purpose Registers (Word)
-			printf("%-34s%-15s\n\n", '6660', 'pushaw')
+			#printf("%-34s%-15s\n\n", '6660', 'pushaw')
 		when asm.match(/^pushad?$/i)
 			#Push All General-Purpose Registers
-			printf("%-34s%-15s\n\n", '60', asm)
+			#printf("%-34s%-15s\n\n", '60', asm)
 		when asm.match(/^pushfw$/i)
 			#Push EFLAGS Register onto the Stack (Word)
-			printf("%-34s%-15s\n\n", '669C', 'pushfw')
+			#printf("%-34s%-15s\n\n", '669C', 'pushfw')
 		when asm.match(/^pushfd?$/i)
 			#Push EFLAGS Register onto the Stack
-			printf("%-34s%-15s\n\n", '9C', asm)
+			#printf("%-34s%-15s\n\n", '9C', asm)
 		when asm.match(/^rcl/i)
 			#Rotate with Carry to the Left
 			if modrmimm(asm, 'rcl', 'C0', '2')		
@@ -790,10 +789,10 @@ def main
 			else nasm(asm) end
 		when asm.match(/^rdmsr$/i)
 			#Read from Model Specific Register
-			printf("%-34s%-15s\n\n", '0F32', 'rdmsr')
+			#printf("%-34s%-15s\n\n", '0F32', 'rdmsr')
 		when asm.match(/^rdpmc$/i)
 			#Read Performance-Monitoring Counters
-			printf("%-34s%-15s\n\n", '0F33', 'rdpmc')
+			#printf("%-34s%-15s\n\n", '0F33', 'rdpmc')
 		when asm.match(/^rdrand\s/i)
 			#Random
 			if plusreg(asm, '0FC7F0')		
@@ -804,146 +803,146 @@ def main
 			else nasm(asm) end
 		when asm.match(/^rdtsc$/i)
 			#Read Time-Stamp Counter
-			printf("%-34s%-15s\n\n", '0F31', 'rdtsc')
+			#printf("%-34s%-15s\n\n", '0F31', 'rdtsc')
 		when asm.match(/^rdtscp$/i)
 			#Read Time-Stamp Counter and Processor ID
-			printf("%-34s%-15s\n\n", '0F01F9', 'rdtscp')
+			#printf("%-34s%-15s\n\n", '0F01F9', 'rdtscp')
 		when asm.match(/^ret$/i)
 			#Return from Procedure
-			printf("%-34s%-15s\n\n", 'C3', 'ret')
+			#printf("%-34s%-15s\n\n", 'C3', 'ret')
 		when asm.match(/^retf$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'CB', 'retf')
+			#printf("%-34s%-15s\n\n", 'CB', 'retf')
 		when asm.match(/^rep\sinsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F36C', 'rep insb')
+			#printf("%-34s%-15s\n\n", 'F36C', 'rep insb')
 		when asm.match(/^rep\sinsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3666D', 'rep insw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F36D', 'rep insw')
+			#printf("%-34s%-15s\n\n", 'F3666D', 'rep insw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F36D', 'rep insw')
 		when asm.match(/^rep\sinsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F36D', 'rep insd')
+			#printf("%-34s%-15s\n\n", 'F36D', 'rep insd')
 		when asm.match(/^rep\smovsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3A4', 'rep movsb')
+			#printf("%-34s%-15s\n\n", 'F3A4', 'rep movsb')
 		when asm.match(/^rep\smovsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F366A5', 'rep movsw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3A5', 'rep movsw')
+			#printf("%-34s%-15s\n\n", 'F366A5', 'rep movsw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3A5', 'rep movsw')
 		when asm.match(/^rep\smovsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3A5', 'rep movsd')
+			#printf("%-34s%-15s\n\n", 'F3A5', 'rep movsd')
 		when asm.match(/^rep\soutsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F36E', 'rep outsb')
+			#printf("%-34s%-15s\n\n", 'F36E', 'rep outsb')
 		when asm.match(/^rep\soutsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3666F', 'rep outsw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F36F', 'rep outsw')
+			#printf("%-34s%-15s\n\n", 'F3666F', 'rep outsw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F36F', 'rep outsw')
 		when asm.match(/^rep\soutsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F36F', 'rep outsd')
+			#printf("%-34s%-15s\n\n", 'F36F', 'rep outsd')
 		when asm.match(/^rep\slodsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3AC', 'rep lodsb')
+			#printf("%-34s%-15s\n\n", 'F3AC', 'rep lodsb')
 		when asm.match(/^rep\slodsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F366AD', 'rep lodsw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3AD', 'rep lodsw')
+			#printf("%-34s%-15s\n\n", 'F366AD', 'rep lodsw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3AD', 'rep lodsw')
 		when asm.match(/^rep\slodsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3AD', 'rep lodsd')
+			#printf("%-34s%-15s\n\n", 'F3AD', 'rep lodsd')
 		when asm.match(/^rep\sstosb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3AA', 'rep stosb')
+			#printf("%-34s%-15s\n\n", 'F3AA', 'rep stosb')
 		when asm.match(/^rep\sstosw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F366AB', 'rep stosw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3AB', 'rep stosw')
+			#printf("%-34s%-15s\n\n", 'F366AB', 'rep stosw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3AB', 'rep stosw')
 		when asm.match(/^rep\sstosd$/i)
 			#Return from Procedure (Far)
-		printf("%-34s%-15s\n\n", 'F3AB', 'rep lodsd')
+		#printf("%-34s%-15s\n\n", 'F3AB', 'rep lodsd')
 		when asm.match(/^repe\scmpsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3A6', 'repe cmpsb')
+			#printf("%-34s%-15s\n\n", 'F3A6', 'repe cmpsb')
 		when asm.match(/^repe\scmpsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F366A7', 'repe cmpsw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3A7', 'repe cmpsw')
+			#printf("%-34s%-15s\n\n", 'F366A7', 'repe cmpsw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3A7', 'repe cmpsw')
 		when asm.match(/^repe\scmpsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3A7', 'repe cmpsd')
+			#printf("%-34s%-15s\n\n", 'F3A7', 'repe cmpsd')
 		when asm.match(/^repz\scmpsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3A6', 'repe cmpsb')
+			#printf("%-34s%-15s\n\n", 'F3A6', 'repe cmpsb')
 		when asm.match(/^repz\scmpsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F366A7', 'repe cmpsw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3A7', 'repe cmpsw')
+			#printf("%-34s%-15s\n\n", 'F366A7', 'repe cmpsw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3A7', 'repe cmpsw')
 		when asm.match(/^repz\scmpsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3A7', 'repe cmpsd')
+			#printf("%-34s%-15s\n\n", 'F3A7', 'repe cmpsd')
 		when asm.match(/^repe\sscasb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3AE', 'repe scasb')
+			#printf("%-34s%-15s\n\n", 'F3AE', 'repe scasb')
 		when asm.match(/^repe\sscasw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F366AF', 'repe scasw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repe scasw')
+			#printf("%-34s%-15s\n\n", 'F366AF', 'repe scasw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repe scasw')
 		when asm.match(/^repe\sscasd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3AF', 'repe scasd')
+			#printf("%-34s%-15s\n\n", 'F3AF', 'repe scasd')
 		when asm.match(/^repz\sscasb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3AE', 'repe scasb')
+			#printf("%-34s%-15s\n\n", 'F3AE', 'repe scasb')
 		when asm.match(/^repz\sscasw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F366AF', 'repe scasw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repe scasw')
+			#printf("%-34s%-15s\n\n", 'F366AF', 'repe scasw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repe scasw')
 		when asm.match(/^repz\sscasd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F3AF', 'repe scasd')
+			#printf("%-34s%-15s\n\n", 'F3AF', 'repe scasd')
 		when asm.match(/^repne\scmpsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2A6', 'repne cmpsb') 
+			#printf("%-34s%-15s\n\n", 'F2A6', 'repne cmpsb') 
 		when asm.match(/^repne\scmpsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F266A7', 'repne cmpsw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F2A7', 'repne cmpsw')
+			#printf("%-34s%-15s\n\n", 'F266A7', 'repne cmpsw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F2A7', 'repne cmpsw')
 		when asm.match(/^repne\scmpsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2A7', 'repne cmpsd')
+			#printf("%-34s%-15s\n\n", 'F2A7', 'repne cmpsd')
 		when asm.match(/^repnz\scmpsb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2A6', 'repne cmpsb') 
+			#printf("%-34s%-15s\n\n", 'F2A6', 'repne cmpsb') 
 		when asm.match(/^repnz\scmpsw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F266A7', 'repne cmpsw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F2A7', 'repne cmpsw')
+			#printf("%-34s%-15s\n\n", 'F266A7', 'repne cmpsw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F2A7', 'repne cmpsw')
 		when asm.match(/^repnz\scmpsd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2A7', 'repne cmpsd')
+			#printf("%-34s%-15s\n\n", 'F2A7', 'repne cmpsd')
 		when asm.match(/^repne\sscasb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2AE', 'repne scasb')
+			#printf("%-34s%-15s\n\n", 'F2AE', 'repne scasb')
 		when asm.match(/^repne\sscasw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F266AF', 'repne scasw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repne scasw')
+			#printf("%-34s%-15s\n\n", 'F266AF', 'repne scasw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repne scasw')
 		when asm.match(/^repne\sscasd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2AF', 'repne scasd')
+			#printf("%-34s%-15s\n\n", 'F2AF', 'repne scasd')
 		when asm.match(/^repnz\sscasb$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2AE', 'repne scasb')
+			#printf("%-34s%-15s\n\n", 'F2AE', 'repne scasb')
 		when asm.match(/^repnz\sscasw$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F266AF', 'repne scasw')
-			printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repne scasw')
+			#printf("%-34s%-15s\n\n", 'F266AF', 'repne scasw')
+			#printf("%-34s%-15s (prefix swap)\n\n", '66F3AF', 'repne scasw')
 		when asm.match(/^repnz\sscasd$/i)
 			#Return from Procedure (Far)
-			printf("%-34s%-15s\n\n", 'F2AF', 'repne scasd')
+			#printf("%-34s%-15s\n\n", 'F2AF', 'repne scasd')
 		when asm.match(/^rol/i)
 			#Rotate to the Left
 			if modrmimm(asm, 'rol', 'C0', '0')
@@ -954,10 +953,10 @@ def main
 			else nasm(asm) end
 		when asm.match(/^rsm$/i)
 			#Resume from System Management Mode
-			printf("%-34s%-15s\n\n", '0FAA', 'rsm')
+			#printf("%-34s%-15s\n\n", '0FAA', 'rsm')
 		when asm.match(/^sahf$/i)
 			#Store AH into Flags
-			printf("%-34s%-15s\n\n", '9E', 'sahf')
+			#printf("%-34s%-15s\n\n", '9E', 'sahf')
 		when asm.match(/^sal/i)
 			#Shift Arithmetic Left (SHL is the official for this)
 			if modrmimm(asm, 'sal', 'C0', '6')
@@ -976,13 +975,13 @@ def main
 			else nasm(asm) end
 		when asm.match(/^scasb$/i)
 			#Scan String (Byte)
-			printf("%-34s%-15s\n\n", 'AE', 'scasb')
+			#printf("%-34s%-15s\n\n", 'AE', 'scasb')
 		when asm.match(/^scasw$/i)
 			#Scan String (Word)
-			printf("%-34s%-15s\n\n", '66AF', 'scasw')
+			#printf("%-34s%-15s\n\n", '66AF', 'scasw')
 		when asm.match(/^scasd$/i)
 			#Scan String (Doubleword)
-			printf("%-34s%-15s\n\n", 'AF', 'scasd')
+			#printf("%-34s%-15s\n\n", 'AF', 'scasd')
 		when asm.match(/^sfence$/i)
 			#Store Fence
 			fence('sfence', '0FAE', 'F8')
@@ -1008,25 +1007,25 @@ def main
 			else nasm(asm) end
 		when asm.match(/^stac$/i)
 			#Set AC Flag in EFLAGS Register
-			printf("%-34s%-15s\n\n", '0F01CB', 'stac')
+			#printf("%-34s%-15s\n\n", '0F01CB', 'stac')
 		when asm.match(/^stc$/i)
 			#Set Carry Flag
-			printf("%-34s%-15s\n\n", 'F9', 'stc')
+			#printf("%-34s%-15s\n\n", 'F9', 'stc')
 		when asm.match(/^std$/i)
 			#Set Direction Flag
-			printf("%-34s%-15s\n\n", 'FD', 'std')
+			#printf("%-34s%-15s\n\n", 'FD', 'std')
 		when asm.match(/^sti$/i)
 			#Set Interrupt Flag
-			printf("%-34s%-15s\n\n", 'FB', 'sti')
+			#printf("%-34s%-15s\n\n", 'FB', 'sti')
 		when asm.match(/^stosb$/i)
 			#Store String (Byte)
-			printf("%-34s%-15s\n\n", 'AA', 'stosb')
+			#printf("%-34s%-15s\n\n", 'AA', 'stosb')
 		when asm.match(/^stosw$/i)
 			#Store String (Word)
-			printf("%-34s%-15s\n\n", '66AB', 'stosw')
+			#printf("%-34s%-15s\n\n", '66AB', 'stosw')
 		when asm.match(/^stosd$/i)
 			#Store String (Doubleword)
-			printf("%-34s%-15s\n\n", 'AB', 'stosd')
+			#printf("%-34s%-15s\n\n", 'AB', 'stosd')
 		when asm.match(/^str\s/i)
 			#Store Task Register
 			if opmodrm(asm, '0F00', '1')
@@ -1041,19 +1040,19 @@ def main
 			else nasm(asm) end
 		when asm.match(/^swapgs/i)
 			#Swap GS Base Register
-			printf("%-34s%-15s\n\n", '0F01F8', 'swapgs') 
+			#printf("%-34s%-15s\n\n", '0F01F8', 'swapgs') 
 		when asm.match(/^syscall/i)
 			#Fast System Call
-			printf("%-34s%-15s\n\n", '0F05', 'syscall')
+			#printf("%-34s%-15s\n\n", '0F05', 'syscall')
 		when asm.match(/^sysenter/i)
 			#Fast System Call
-			printf("%-34s%-15s\n\n", '0F34', 'sysenter')
+			#printf("%-34s%-15s\n\n", '0F34', 'sysenter')
 		when asm.match(/^sysexit/i)
 			#Fast Return from Fast System Call
-			printf("%-34s%-15s\n\n", '0F35', 'sysexit')
+			#printf("%-34s%-15s\n\n", '0F35', 'sysexit')
 		when asm.match(/^sysret/i)
 			#Return From Fast System Call
-			printf("%-34s%-15s\n\n", '0F07', 'sysret')
+			#printf("%-34s%-15s\n\n", '0F07', 'sysret')
 		when asm.match(/^test/i)
 			#Logical Compare
 			if alimm8_c(asm, 'A8', 'F6C0')
@@ -1068,7 +1067,7 @@ def main
 			else nasm(asm) end
 		when asm.match(/^ud2$/i)
 			#Undefined asm
-			printf("%-34s%-15s\n\n", '0F0B', 'ud2')
+			#printf("%-34s%-15s\n\n", '0F0B', 'ud2')
 		when asm.match(/^verr\s/i)
 			#Store Task Register
 			if opmodrm(asm, '0F00', '4')
@@ -1087,13 +1086,13 @@ def main
 			else nasm(asm) end
 		when asm.match(/^f?wait$/i)
 			#Wait
-			printf("%-34s%-15s\n\n", '9B', 'wait')
+			#printf("%-34s%-15s\n\n", '9B', 'wait')
 		when asm.match(/^wbinvd$/i)
 			#Write Back and Invalidate Cache
-			printf("%-34s%-15s\n\n", '0F09', 'wbinvd')
+			#printf("%-34s%-15s\n\n", '0F09', 'wbinvd')
 		when asm.match(/^wrmsr$/i)
 			#Write to Model Specific Register
-			printf("%-34s%-15s\n\n", '0F30', 'wrmsr')
+			#printf("%-34s%-15s\n\n", '0F30', 'wrmsr')
 		when asm.match(/^xabort\s/i)
 			#Transactional Abort
 			if opimm8(asm, 'C6F8')		
@@ -1109,10 +1108,10 @@ def main
 			else nasm(asm) end
 		when asm.match(/^xgetbv$/i)
 			#Get Value of Extended Control Register
-			printf("%-34s%-15s\n\n", '0F01D0', 'xgetbv')
+			#printf("%-34s%-15s\n\n", '0F01D0', 'xgetbv')
 		when asm.match(/^xlat$/i)
 			#Table Look-up Translation
-			printf("%-34s%-15s\n\n", 'D7', 'xlat (BYTE PTR ds:[ebx])')
+			#printf("%-34s%-15s\n\n", 'D7', 'xlat (BYTE PTR ds:[ebx])')
 		when asm.match(/^xor/i)
 			#Logical Exlusive OR
 			if alimm8_c(asm, '34', '80F0')
@@ -1123,16 +1122,16 @@ def main
 			else nasm(asm) end
 		when asm.match(/^xsetbv/i)
 			#Set Extended Control Register
-			printf("%-34s%-15s\n\n", '0F01D1', 'xsetbv')
+			#printf("%-34s%-15s\n\n", '0F01D1', 'xsetbv')
 		when asm.match(/^xtest/i)
 			#Test If in Transactional Execution
-			printf("%-34s%-15s\n\n", '0F01D6', 'xtest')																																																																																																																																																																				
+			#printf("%-34s%-15s\n\n", '0F01D6', 'xtest')																																																																																																																																																																				
 		else 
 			nasm(asm) 
 		end
 
 		if !$list.empty?
-			puts "Results : " 
+			printf("Results : ");
 			puts $list 
 		end
 	end
@@ -1215,9 +1214,9 @@ def alimm8 (instruction, m1, m2)	#OP AL, imm8
 	if extracted = /^\w+\s+al,\s*((0x)?[a-f0-9]+)$/i.match(instruction)
 		s_operand = imm8(extracted.captures[0]) 					#validate sanity of imm8
 		instruction_alt = objdump(m1 + s_operand)					#objdump format of instruction
-		printf("%-34s%-15s\n\n", m1 + s_operand, instruction_alt)	#display instruction
+		#printf("%-34s%-15s\n\n", m1 + s_operand, instruction_alt)	#display instruction
 		instruction_alt = objdump(m2 + s_operand)					#objdump format of alternate instruction
-		printf("%-34s%-15s (r/m8, imm8)\n\n", m2 + s_operand, instruction_alt)	#display instruction
+		#printf("%-34s%-15s (r/m8, imm8)\n\n", m2 + s_operand, instruction_alt)	#display instruction
 		sanity_check(m1 + s_operand, instruction)	#See if this output matches nasms
 		return 1
 	end
@@ -1235,18 +1234,18 @@ def aximm16 (instruction, m1, m2, m3)	#OP AX, imm16
 		#If there are at least two leading zero's, this can be done as imm8 as well
 		if extracted_i = /00(..)/i.match(s_operand)
 			instruction_alt = objdump(m3 + littleend(s_operand))						#objdump format
-			printf("%-34s%-15s\n\n", m3 + extracted_i.captures[0], instruction_alt)		#
+			#printf("%-34s%-15s\n\n", m3 + extracted_i.captures[0], instruction_alt)		#
 			sanity_check(m3 + extracted_i.captures[0], instruction)
 			instruction_alt = objdump(m1 + littleend(s_operand))	
-			printf("%-34s%-15s (ax, imm16)\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (ax, imm16)\n", m1 + littleend(s_operand), instruction_alt)
 			instruction_alt = objdump(m2 + littleend(s_operand))
-			printf("%-34s%-15s (r/m16, imm16)\n", m2 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (r/m16, imm16)\n", m2 + littleend(s_operand), instruction_alt)
 		else
 			instruction_alt = objdump(m1 + littleend(s_operand))	
-			printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
 			sanity_check(m1 + littleend(s_operand), instruction)
 			instruction_alt = objdump(m2 + littleend(s_operand))
-			printf("%-34s%-15s (r/m16, imm16)\n", m2 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (r/m16, imm16)\n", m2 + littleend(s_operand), instruction_alt)
 		end
 		puts "\n"		
 		return 1
@@ -1263,18 +1262,18 @@ def eaximm32 (instruction, m1, m2, m3)	#OP EAX, imm32
 		s_operand = imm32(extracted.captures[0])
 		if extracted_i = /000000(..)/i.match(s_operand)
 			instruction_alt = objdump(m3 + extracted_i.captures[0])
-			printf("%-34s%-15s\n\n", m3 + extracted_i.captures[0], instruction_alt)
+			#printf("%-34s%-15s\n\n", m3 + extracted_i.captures[0], instruction_alt)
 			sanity_check(m3 + extracted_i.captures[0], instruction)	#See if this output matches nasms
 			instruction_alt = objdump(m1 + littleend(s_operand))		
-			printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)
 			instruction_alt = objdump(m2 + littleend(s_operand))
-			printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
 		else
 			instruction_alt = objdump(m1 + littleend(s_operand))		
-			printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
 			sanity_check(m1 + littleend(s_operand), instruction)	#See if this output matches nasms		
 			instruction_alt = objdump(m2 + littleend(s_operand))
-			printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
 		end
 		puts "\n"		
 		return 1
@@ -1296,19 +1295,19 @@ def alimm8_b (instruction, m1, m2, m3, m4, m5, m6, m7)	#OP AL, imm8
 	if extracted = /^\w+\s+al,\s*((0x)?[a-f0-9]+)$/i.match(instruction)
 		s_operand = imm8(extracted.captures[0]) #validate sanity of imm8
 		instruction_alt = objdump(m5 + s_operand)
-		printf("%-34s%-15s\n\n", m5 + s_operand, instruction_alt)
+		#printf("%-34s%-15s\n\n", m5 + s_operand, instruction_alt)
 		instruction_alt = objdump(m6 + s_operand)
-		printf("%-34s%-15s (r/m8, imm8)\n", m6 + s_operand, instruction_alt)
+		#printf("%-34s%-15s (r/m8, imm8)\n", m6 + s_operand, instruction_alt)
 		instruction_alt = objdump(m3 + littleend('FF' + s_operand))
-		printf("%-34s%-15s (ax, imm16)\n", m3 + littleend('FF' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (ax, imm16)\n", m3 + littleend('FF' + s_operand), instruction_alt)
 		instruction_alt = objdump(m7 + s_operand)
-		printf("%-34s%-15s (r/m16, imm8)\n", m7 + s_operand, instruction_alt)
+		#printf("%-34s%-15s (r/m16, imm8)\n", m7 + s_operand, instruction_alt)
 		instruction_alt = objdump(m4 + littleend('FF' + s_operand))	
-		printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend('FF' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend('FF' + s_operand), instruction_alt)
 		instruction_alt = objdump(m1 + littleend('FFFFFF' + s_operand))
-		printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('FFFFFF' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('FFFFFF' + s_operand), instruction_alt)
 		instruction_alt = objdump(m2 + littleend('FFFFFF' + s_operand))
-		printf("%-34s%-15s (r/m32, imm32)\n\n", m2 + littleend('FFFFFF' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m32, imm32)\n\n", m2 + littleend('FFFFFF' + s_operand), instruction_alt)
 		sanity_check(m5 + s_operand, instruction)	#See if this output matches nasms
 		return 1
 	end
@@ -1329,29 +1328,29 @@ def aximm16_b (instruction, m1, m2, m3, m4, m5, m6, m7)
 		if disp_to_dec(s_operand) < 256 then
 			s_operand = imm8(s_operand)			
 			instruction_alt = objdump(m7 + s_operand)
-			printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
+			#printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
 			sanity_check(m7 + s_operand, instruction_alt)	#See if this output matches nasms
 			s_operand = 'FF' + s_operand
 			instruction_alt = objdump(m3 + littleend(s_operand))
-			printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(s_operand), instruction_alt)
 			sanity_check(m3 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		else
 			s_operand = imm16(s_operand)
 			instruction_alt = objdump(m3 + littleend(s_operand))
-			printf("%-34s%-15s\n\n", m3 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m3 + littleend(s_operand), instruction_alt)
 			sanity_check(m3 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		end
 		instruction_alt = objdump(m4 + littleend(s_operand))
-		printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend(s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend(s_operand), instruction_alt)
 		instruction_alt = objdump(m1 + littleend('FFFF' + s_operand))
-		printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('FFFF' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('FFFF' + s_operand), instruction_alt)
 		instruction_alt = objdump(m2 + littleend('FFFF' + s_operand))
-		printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend('FFFF' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend('FFFF' + s_operand), instruction_alt)
 		if extracted_i = /ff(..)/i.match(s_operand)
 			instruction_alt = objdump(m5 + extracted_i.captures[0])
-			printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
+			#printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
 			instruction_alt = objdump(m6 + extracted_i.captures[0])
-			printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)		
+			#printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)		
 		end
 		puts "\n"
 		return 1
@@ -1373,31 +1372,31 @@ def eaximm32_b (instruction, m1, m2, m3, m4, m5, m6, m7)
 		if disp_to_dec(s_operand) < 256 then
 			s_operand = imm8(s_operand)			
 			instruction_alt = objdump(m7 + s_operand)
-			printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
+			#printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
 			sanity_check(m7 + s_operand, instruction_alt)	#See if this output matches nasms
 			s_operand = 'FFFFFF' + s_operand
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)
 			sanity_check(m1 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		else
 			s_operand = imm32(s_operand)
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
 			sanity_check(m1 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		end
 		instruction_alt = objdump(m2 + littleend(s_operand))
-		printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
 		if extracted_i = /FFFF(....)/i.match(s_operand)		
 			instruction_alt = objdump(m3 + littleend(extracted_i.captures[0]))
-			printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(extracted_i.captures[0]), instruction_alt)
+			#printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(extracted_i.captures[0]), instruction_alt)
 			instruction_alt = objdump(m4 + littleend(extracted_i.captures[0]))
-		    printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend(extracted_i.captures[0]), instruction_alt)			
+		    #printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend(extracted_i.captures[0]), instruction_alt)			
 		end		
 		if extracted_i = /FFFFFF(..)/i.match(s_operand)		
 			instruction_alt = objdump(m5 + extracted_i.captures[0])
-			printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
+			#printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
 			instruction_alt = objdump(m6 + extracted_i.captures[0])
-			printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)				
+			#printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)				
 		end
 		puts "\n"	
 		return 1
@@ -1413,9 +1412,9 @@ def alimm8_c (instruction, m1, m2)	#OP AL, imm8
 	if extracted = /^\w+\s+al,\s*((0x)?[a-f0-9]+)$/i.match(instruction)
 		s_operand = imm8(extracted.captures[0]) #validate sanity of imm8
 		instruction_alt = objdump(m1 + s_operand)
-		printf("%-34s%-15s\n\n", m1 + s_operand, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1 + s_operand, instruction_alt)
 		instruction_alt = objdump(m2 + s_operand)
-		printf("%-34s%-15s (r/m8, imm8)\n\n", m2 + s_operand, instruction_alt)		
+		#printf("%-34s%-15s (r/m8, imm8)\n\n", m2 + s_operand, instruction_alt)		
 		sanity_check(m1 + s_operand, instruction_alt)	#See if this output matches nasms	
 		return 1
 	end
@@ -1432,19 +1431,19 @@ def aximm16_c (instruction, m1, m2, m3)
 		if disp_to_dec(s_operand) < 256 and m3 != 'invalid' then
 			s_operand = imm8(s_operand)		
 			instruction_alt = objdump(m3 + s_operand)
-			printf("%-34s%-15s\n\n", m3 + s_operand, instruction_alt)
+			#printf("%-34s%-15s\n\n", m3 + s_operand, instruction_alt)
 			sanity_check(m3 + s_operand, instruction_alt)	#See if this output matches nasms
 			s_operand = '00' + s_operand
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s (ax, imm16)\n", m1 + littleend(s_operand), instruction_alt)		
+			#printf("%-34s%-15s (ax, imm16)\n", m1 + littleend(s_operand), instruction_alt)		
 		else
 			s_operand = imm16(s_operand)
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
 			sanity_check(m1 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		end		
 		instruction_alt = objdump(m2 + littleend(s_operand))
-		printf("%-34s%-15s (r/m16, imm16)\n\n", m2 + littleend(s_operand), instruction_alt)	
+		#printf("%-34s%-15s (r/m16, imm16)\n\n", m2 + littleend(s_operand), instruction_alt)	
 		return 1
 	end
 end
@@ -1459,19 +1458,19 @@ def eaximm32_c (instruction, m1, m2, m3)
 		if disp_to_dec(s_operand) < 256 and m3 != 'invalid' then
 			s_operand = imm8(s_operand)		
 			instruction_alt = objdump(m3 + s_operand)
-			printf("%-34s%-15s\n\n", m3 + s_operand, instruction_alt)
+			#printf("%-34s%-15s\n\n", m3 + s_operand, instruction_alt)
 			sanity_check(m3 + s_operand, instruction_alt)	#See if this output matches nasms
 			s_operand = '000000' + s_operand
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)		
+			#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)		
 		else
 			s_operand = imm32(s_operand)
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
 			sanity_check(m1 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		end	
 		instruction_alt = objdump(m2 + littleend(s_operand))
-		printf("%-34s%-15s (r/m32, imm32)\n\n", m2 + littleend(s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m32, imm32)\n\n", m2 + littleend(s_operand), instruction_alt)
 		return 1
 	end
 end
@@ -1492,7 +1491,7 @@ def alimm8_d (instruction, m1, m2)	#OP AL, imm8
 		end		
 		s_operand = imm8(extracted.captures[0]) #validate sanity of imm8
 		instruction_alt = objdump(m1 + s_operand)		
-		printf("%-34s%-15s\n\n", m1 + s_operand, instruction_alt)	
+		#printf("%-34s%-15s\n\n", m1 + s_operand, instruction_alt)	
 		sanity_check(m1 + s_operand, instruction)	#See if this output matches nasms
 		return 1
 	end
@@ -1511,18 +1510,18 @@ def alimm8_e (instruction, m1, m2, m3, m4, m5, m6)	#OP AL, imm8
 	if extracted = /^\w+\s+al,\s*((0x)?[a-f0-9]+)$/i.match(instruction)
 		s_operand = imm8(extracted.captures[0]) #validate sanity of imm8
 		instruction_alt = objdump(m5 + s_operand)
-		printf("%-34s%-15s\n\n", m5 + s_operand, instruction_alt)
+		#printf("%-34s%-15s\n\n", m5 + s_operand, instruction_alt)
 		sanity_check(m5 + s_operand, instruction)	#See if this output matches nasms
 		instruction_alt = objdump(m6 + s_operand)
-		printf("%-34s%-15s (r/m8, imm8)\n", m6 + s_operand, instruction_alt)
+		#printf("%-34s%-15s (r/m8, imm8)\n", m6 + s_operand, instruction_alt)
 		instruction_alt = objdump(m3 + littleend('00' + s_operand))
-		printf("%-34s%-15s (ax, imm16)\n", m3 + littleend('00' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (ax, imm16)\n", m3 + littleend('00' + s_operand), instruction_alt)
 		instruction_alt = objdump(m4 + littleend('00' + s_operand))
-		printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend('00' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend('00' + s_operand), instruction_alt)
 		instruction_alt = objdump(m1 + littleend('000000' + s_operand))
-		printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('000000' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('000000' + s_operand), instruction_alt)
 		instruction_alt = objdump(m2 + littleend('000000' + s_operand))
-		printf("%-34s%-15s (r/m32, imm32)\n\n", m2 + littleend('000000' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m32, imm32)\n\n", m2 + littleend('000000' + s_operand), instruction_alt)
 		return 1
 	end
 end
@@ -1542,28 +1541,28 @@ def aximm16_e (instruction, m1, m2, m3, m4, m5, m6, m7)
 		if disp_to_dec(s_operand) < 256 then
 			s_operand = imm8(s_operand)		
 			instruction_alt = objdump(m7 + s_operand)
-			printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
+			#printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
 			sanity_check(m7 + s_operand, instruction_alt)	#See if this output matches nasms
 			s_operand = '00' + s_operand
 			instruction_alt = objdump(m3 + littleend(s_operand))
-			printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(s_operand), instruction_alt)		
+			#printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(s_operand), instruction_alt)		
 		else
 			s_operand = imm16(s_operand)
 			instruction_alt = objdump(m3 + littleend(s_operand))
-			printf("%-34s%-15s\n\n", m3 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m3 + littleend(s_operand), instruction_alt)
 			sanity_check(m3 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		end		
 		instruction_alt = objdump(m4 + littleend(s_operand))
-		printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend(s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m16, imm16)\n", m4 + littleend(s_operand), instruction_alt)
 		instruction_alt = objdump(m1 + littleend('0000' + s_operand))
-		printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('0000' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend('0000' + s_operand), instruction_alt)
 		instruction_alt = objdump(m2 + littleend('0000' + s_operand))
-		printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend('0000' + s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend('0000' + s_operand), instruction_alt)
 		if extracted_i = /00(..)/i.match(s_operand)
 			instruction_alt = objdump(m5 + extracted_i.captures[0])
-			printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
+			#printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
 			instruction_alt = objdump(m6 + extracted_i.captures[0])
-			printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)		
+			#printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)		
 		end
 		puts "\n"
 		return 1
@@ -1585,30 +1584,30 @@ def eaximm32_e (instruction, m1, m2, m3, m4, m5, m6, m7)
 		if disp_to_dec(s_operand) < 256 then
 			s_operand = imm8(s_operand)		
 			instruction_alt = objdump(m7 + s_operand)
-			printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
+			#printf("%-34s%-15s\n\n", m7 + s_operand, instruction_alt)
 			sanity_check(m7 + s_operand, instruction_alt)	#See if this output matches nasms
 			s_operand = '000000' + s_operand
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)		
+			#printf("%-34s%-15s (eax, imm32)\n", m1 + littleend(s_operand), instruction_alt)		
 		else
 			s_operand = imm32(s_operand)
 			instruction_alt = objdump(m1 + littleend(s_operand))
-			printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + littleend(s_operand), instruction_alt)
 			sanity_check(m1 + littleend(s_operand), instruction_alt)	#See if this output matches nasms			
 		end	
 		instruction_alt = objdump(m2 + littleend(s_operand))
-		printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
+		#printf("%-34s%-15s (r/m32, imm32)\n", m2 + littleend(s_operand), instruction_alt)
 		if extracted_i = /0000(....)/i.match(s_operand)
 			instruction_alt = objdump(m3 + littleend(extracted_i.captures[0]))
-			printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(extracted_i.captures[0]), instruction_alt)
+			#printf("%-34s%-15s (ax, imm16)\n", m3 + littleend(extracted_i.captures[0]), instruction_alt)
 			instruction_alt = objdump(m4 + littleend(extracted_i.captures[0]))			
-		    printf("%-34s%-15s (r/m16, imm16\n", m4 + littleend(extracted_i.captures[0]), instruction_alt)			
+		    #printf("%-34s%-15s (r/m16, imm16\n", m4 + littleend(extracted_i.captures[0]), instruction_alt)			
 		end		
 		if extracted_i = /000000(..)/i.match(s_operand)	
 			instruction_alt = objdump(m5 + extracted_i.captures[0])	
-			printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
+			#printf("%-34s%-15s (al, imm8)\n", m5 + extracted_i.captures[0], instruction_alt)
 			instruction_alt = objdump(m6 + extracted_i.captures[0])
-			printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)		
+			#printf("%-34s%-15s (r/m8, imm8)\n", m6 + extracted_i.captures[0], instruction_alt)		
 		end
 		puts "\n"
 		return 1
@@ -1621,13 +1620,13 @@ def fence (instruction, m1, m2)
 	#	m1 is the 'prelude machine-code'
 	#	m2 is the adjustable peice of machine code
 	instruction_alt = objdump(m1 + m2)	
-	printf("%-34s%-15s\n\n", m1 + m2, instruction_alt)
+	#printf("%-34s%-15s\n\n", m1 + m2, instruction_alt)
 	for i in 1..7
 		machinecode = (m1 + (m2.hex.to_s(10).to_i + i).to_s(16)).upcase
 		
 		$list.push(machinecode)
 
-		printf("%-34s%-15s\n", machinecode, instruction)
+		#printf("%-34s%-15s\n", machinecode, instruction)
 	end
 	puts "\n"
 
@@ -1782,18 +1781,18 @@ def modrmimm (instruction, op, m1, num)
 
 		if mov_inst != 0 then
 			instruction_alt = objdump(mov_inst)
-			printf("%-34s%-15s\n\n", mov_inst, instruction_alt)
+			#printf("%-34s%-15s\n\n", mov_inst, instruction_alt)
 			sanity_check(mov_inst, instruction)	#See if this output matches nasms
 			
 			modrm = (modrm.to_s(16)).upcase
 			instruction_alt = objdump(m1 + modrm + s_operand)
-			printf("%-34s%-15s (rm/imm)\n\n", m1 + modrm + s_operand, instruction_alt)
+			#printf("%-34s%-15s (rm/imm)\n\n", m1 + modrm + s_operand, instruction_alt)
 			return 1
 		end
 
 		modrm = (modrm.to_s(16)).upcase
 		instruction_alt = objdump(m1 + modrm + s_operand)
-		printf("%-34s%-15s\n\n", m1 + modrm + s_operand, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1 + modrm + s_operand, instruction_alt)
 		sanity_check(m1 + modrm + s_operand, instruction)	#See if this output matches nasms
 
 		#Alternates?
@@ -1804,14 +1803,14 @@ def modrmimm (instruction, op, m1, num)
 				s_operand = littleend(imm16(s_operand))				
 				m1 = '6681' #adc, add, and, cmp, or, sbb, sub, xor
 				instruction_alt = objdump(m1 + modrm + s_operand)
-				printf("%-34s%-15s (r/m16, imm16)\n\n", m1 + modrm + s_operand, instruction_alt)				
+				#printf("%-34s%-15s (r/m16, imm16)\n\n", m1 + modrm + s_operand, instruction_alt)				
 			end
 		elsif disp_to_dec(s_operand) > -1 and disp_to_dec(s_operand) < 255 and /e[acdbs][xpi]/i.match(instruction) then	
 			if m1 == '80' and disp_to_dec(s_operand) > -1 and disp_to_dec(s_operand) < 255 then 
 				s_operand = littleend(imm32(s_operand))	
 				m1 = '81' #adc, add, and, cmp, or, sbb, sub, xor
 				instruction_alt = objdump(m1 + modrm + s_operand)
-				printf("%-34s%-15s (r/m32, imm32)\n\n", m1 + modrm + s_operand, instruction_alt)					
+				#printf("%-34s%-15s (r/m32, imm32)\n\n", m1 + modrm + s_operand, instruction_alt)					
 			end					
 		end		
 
@@ -1927,13 +1926,13 @@ def modrmimm (instruction, op, m1, num)
 		m1 = m1.gsub(/D/i, 'C') #Change it back
 		if multiplier_p == '0' and !esp_areg_p then 
 			instruction_alt = objdump(m1 + modrm_p + s_operand_p)
-			printf("%-34s%-15s (Explicit imm8)\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (Explicit imm8)\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
 		elsif !register_p and !multiplier_p and !mreg_p and offset then 
 			instruction_alt = objdump(m1 + modrm_p + s_operand_p)
-			printf("%-34s%-15s (Explicit imm8)\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (Explicit imm8)\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
 		else 
 			instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)
-			printf("%-34s%-15s (Explicit imm8)\n\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt) 
+			#printf("%-34s%-15s (Explicit imm8)\n\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt) 
 		end
 		modrmimm_pointer_alternates(reg_a, reg_b, tworegs, modrm_p, sib_p, s_operand_p, esp_areg_p, multiplier_p, register_p, mreg_p, negative, register, s_operand, offset, multiplier, mreg, m1, instruction, num)
 		m1 = m1.gsub(/C/i, 'D') #now change it back again
@@ -2120,7 +2119,7 @@ def modrmmodrm(instruction, m1)
 		modrm = zeropad(modrm.to_s(16), 2)
 		instruction_alt = objdump(m1 + modrm)			
 		if not /^test/i.match(instruction) and not m1 == '660F38F6' and not m1 == 'F30F38F6' and not m1 == '0F79' and not m1_u == '0FBC' and not m1_u == '0FBD' and not m1_u == 'F30FB8' and not m1_u == 'F30FBC' and not /^(66)?8[67]/i.match(m1) and not /^cmov/i.match(instruction)
-			printf("%-34s%-15s\n\n", m1 + modrm, instruction_alt)				
+			#printf("%-34s%-15s\n\n", m1 + modrm, instruction_alt)				
 			sanity_check(m1 + modrm, instruction)	#See if this output matches nasms
 		end
 		m1 = m1_u	
@@ -2161,9 +2160,9 @@ def modrmmodrm(instruction, m1)
 		modrm = zeropad(modrm.to_s(16), 2)
 		instruction_alt = objdump(m1 + modrm)	
 		if not /^test/i.match(instruction) and not m1 == '660F38F6' and not m1 == 'F30F38F6' and not m1 == '0F79' and not m1 == '63' and not m1_u == '0FBC' and not m1_u == '0FBD' and not m1_u == 'F30FB8' and not m1_u == 'F30FBC' and not /0FB[01]/i.match(m1) and not m1_u == '0F78' and not /^(66)?8[67]/i.match(m1) and not /^cmov/i.match(instruction)
-			printf("%-34s%-15s (The 'Other' ModR/M)\n\n", m1 + modrm, instruction_alt)
+			#printf("%-34s%-15s (The 'Other' ModR/M)\n\n", m1 + modrm, instruction_alt)
 		elsif not m1 == '63' and not /0FB[01]/i.match(m1) and not m1 == '0F78'
-			printf("%-34s%-15s\n\n", m1 + modrm, instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + modrm, instruction_alt)
 			sanity_check(m1 + modrm, instruction)	#See if this output matches nasms
 		end
 
@@ -2257,12 +2256,12 @@ def jcc(instruction, m1)
 		if value > -1 then
 			value = littleend(zeropad(value.to_s(16), 8))
 			instruction_alt = objdump(m1 + value)			
-			printf("%-34s%-15s\n\n", m1 + value, instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + value, instruction_alt)
 		else
 			value = 4294967295 - (value.abs - 1)
 			value = littleend(value.to_s(16)).upcase
 			instruction_alt = objdump(m1 + value)			
-			printf("%-34s%-15s\n\n", m1 + value, instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + value, instruction_alt)
 		end
 	else
 		m1 = m1.gsub(/^7(.)/, '0F8\1')
@@ -2271,7 +2270,7 @@ def jcc(instruction, m1)
 		value = 4294967295
 		value = littleend(value.to_s(16)).upcase
 		instruction_alt = objdump(m1 + value)			
-		printf("%-34s%-15s\n\n", m1 + value, instruction_alt)	
+		#printf("%-34s%-15s\n\n", m1 + value, instruction_alt)	
 	end
 
 	#Process with rel16 if possible
@@ -2286,12 +2285,12 @@ def jcc(instruction, m1)
 		if value > -1 then		
 			value = littleend(zeropad(value.to_s(16), 4)).upcase
 			instruction_alt = objdump(m1 + value)			
-			printf("%-34s%-15s (WORD sized alternate)\n", m1 + value, instruction_alt)
+			#printf("%-34s%-15s (WORD sized alternate)\n", m1 + value, instruction_alt)
 		else
 			value = 65535 - (value.abs - 1)
 			value = littleend(value.to_s(16)).upcase
 			instruction_alt = objdump(m1 + value)			
-			printf("%-34s%-15s (WORD sized alternate)\n", m1 + value, instruction_alt)
+			#printf("%-34s%-15s (WORD sized alternate)\n", m1 + value, instruction_alt)
 		end	
 	elsif negative == 1 and value < 32764 then
 		m1 = m1.gsub(/C7F8/, '66C7F8')	
@@ -2302,7 +2301,7 @@ def jcc(instruction, m1)
 		value = 65535 - value
 		value = littleend(value.to_s(16)).upcase
 		instruction_alt = objdump(m1 + value)			
-		printf("%-34s%-15s (WORD sized alternate)\n", m1 + value, instruction_alt)	
+		#printf("%-34s%-15s (WORD sized alternate)\n", m1 + value, instruction_alt)	
 	end	
 
 	#Process with rel8 if possible
@@ -2314,19 +2313,19 @@ def jcc(instruction, m1)
 			if value > -1 then			
 				value = littleend(zeropad(value.to_s(16), 2)).upcase
 				instruction_alt = objdump(m1 + value)			
-				printf("%-34s%-15s (BYTE sized alternate)\n", m1 + value, instruction_alt)
+				#printf("%-34s%-15s (BYTE sized alternate)\n", m1 + value, instruction_alt)
 			else
 				value = 255 - (value.abs - 1)
 				value = littleend(value.to_s(16)).upcase
 				instruction_alt = objdump(m1 + value)			
-				printf("%-34s%-15s (BYTE sized alternate)\n", m1 + value, instruction_alt)	
+				#printf("%-34s%-15s (BYTE sized alternate)\n", m1 + value, instruction_alt)	
 			end	
 		elsif negative == 1 and value < 127 then
 			value = value + 1
 			value = 255 - value
 			value = littleend(value.to_s(16)).upcase
 			instruction_alt = objdump(m1 + value)			
-			printf("%-34s%-15s (BYTE sized alternate)\n", m1 + value, instruction_alt)	
+			#printf("%-34s%-15s (BYTE sized alternate)\n", m1 + value, instruction_alt)	
 		end	
 	end
 	puts "\n"
@@ -2373,9 +2372,9 @@ def plusreg(instruction, m1)
 	#Display instruction
 	instruction_alt = objdump(m1)			
 	if /^bswap\s[^e]/i.match(instruction) then
-		printf("%-34s%-15s (Invalid tho)\n\n", m1, instruction_alt)
+		#printf("%-34s%-15s (Invalid tho)\n\n", m1, instruction_alt)
 	else
-		printf("%-34s%-15s\n\n", m1, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1, instruction_alt)
 	end
 	sanity_check(m1, instruction)	#See if this output matches nasms	
 
@@ -2408,19 +2407,19 @@ def rel8(instruction, m1)
 		if value > -1 then			
 			value = littleend(zeropad(value.to_s(16), 2)).upcase
 			instruction_alt = objdump(m1 + value)			
-			printf("%-34s%-15s\n", m1 + value, instruction_alt)
+			#printf("%-34s%-15s\n", m1 + value, instruction_alt)
 		else
 			value = 255 - (value.abs - 1)
 			value = littleend(value.to_s(16)).upcase
 			instruction_alt = objdump(m1 + value)			
-			printf("%-34s%-15s\n", m1 + value, instruction_alt)	
+			#printf("%-34s%-15s\n", m1 + value, instruction_alt)	
 		end	
 	elsif negative == 1 and value < 127 then
 		value = value + 1
 		value = 255 - value
 		value = littleend(value.to_s(16)).upcase
 		instruction_alt = objdump(m1 + value)			
-		printf("%-34s%-15s\n", m1 + value, instruction_alt)	
+		#printf("%-34s%-15s\n", m1 + value, instruction_alt)	
 	else
 		puts "Value provided is out of bounds\n"
 	end	
@@ -2445,7 +2444,7 @@ def imm16imm8(instruction, m1)
 	else return false end
 
 	instruction_alt = objdump(m1 + imm16 + imm8)
-	printf("%-34s%-15s\n\n", m1 + imm16 + imm8, instruction_alt)	
+	#printf("%-34s%-15s\n\n", m1 + imm16 + imm8, instruction_alt)	
 	sanity_check(m1 + imm16 + imm8, instruction)	#See if this output matches nasms	
 	return 1
 end
@@ -2454,13 +2453,13 @@ def inaldx(instruction)
 	#GateKeeper Parse
 	if extracted = /^in\sal,\s*dx$/i.match(instruction) then
 		instruction_alt = objdump('ec')
-		printf("%-34s%-15s\n\n", 'EC', instruction_alt)
+		#printf("%-34s%-15s\n\n", 'EC', instruction_alt)
 	elsif extracted = /^in\sax,\s*dx$/i.match(instruction) then
 		instruction_alt = objdump('ec')
-		printf("%-34s%-15s\n\n", '66ED', instruction_alt)
+		#printf("%-34s%-15s\n\n", '66ED', instruction_alt)
 	elsif extracted = /^in\seax,\s*dx$/i.match(instruction) then
 		instruction_alt = objdump('ec')
-		printf("%-34s%-15s\n\n", 'ED', instruction_alt)
+		#printf("%-34s%-15s\n\n", 'ED', instruction_alt)
 	else return false end
 	return 1
 end
@@ -2469,9 +2468,9 @@ def opimm8(instruction, m1)
 	#GateKeeper Parse
 	if extracted = /^int(3|\s*3|\s*0x0?3)$/i.match(instruction) then
 		instruction_alt = objdump("CD03")
-		printf("%-34s%-15s\n\n", "CC03", instruction_alt)	
+		#printf("%-34s%-15s\n\n", "CC03", instruction_alt)	
 		instruction_alt = objdump("CC")
-		printf("%-34s%-15s (One Byte Version)\n\n", "CC", instruction_alt)	
+		#printf("%-34s%-15s (One Byte Version)\n\n", "CC", instruction_alt)	
 		return 1	
 	elsif extracted = /^\S+\s(\d+)$/i.match(instruction) then
 		imm8 = imm8(extracted.captures[0])
@@ -2480,7 +2479,7 @@ def opimm8(instruction, m1)
 	else return false end
 
 	instruction_alt = objdump(m1 + imm8)
-	printf("%-34s%-15s\n\n", m1 + imm8, instruction_alt)	
+	#printf("%-34s%-15s\n\n", m1 + imm8, instruction_alt)	
 	sanity_check(m1 + imm8, instruction)	#See if this output matches nasms
 	return 1
 end
@@ -2503,7 +2502,7 @@ def pushimm(instruction)
 		ammount = littleend(zeropad((ammount_unsigned & 0xff).to_s(16), 2))
 		m1 = '6A'
 		instruction_alt = objdump(m1 + ammount)
-		printf("%-34s%-15s\n\n", m1 + ammount, instruction_alt)	
+		#printf("%-34s%-15s\n\n", m1 + ammount, instruction_alt)	
 		sanity_check(m1 + ammount, instruction)	#See if this output matches nasms
 	end
 
@@ -2511,13 +2510,13 @@ def pushimm(instruction)
 		ammount = littleend(zeropad((ammount_unsigned & 0xffff).to_s(16), 4))
 		m1 = '6668'
 		instruction_alt = objdump(m1 + ammount)
-		printf("%-34s%-15s (WORD Sized Alternate)\n\n", m1 + ammount, instruction_alt)
+		#printf("%-34s%-15s (WORD Sized Alternate)\n\n", m1 + ammount, instruction_alt)
 	end
 
 	ammount = littleend(zeropad(ammount_unsigned.to_s(16), 8))
 	m1 = '68'
 	instruction_alt = objdump(m1 + ammount)
-	printf("%-34s%-15s\n\n", m1 + ammount, instruction_alt)	
+	#printf("%-34s%-15s\n\n", m1 + ammount, instruction_alt)	
 	# nasm will use the 6A opcode whenever possible, so the sanity check will fail for single byte operands
 	if ammount_int < -128 or 128 <= ammount_int then 
 		sanity_check(m1 + ammount, instruction)	#See if this output matches nasms
@@ -2542,12 +2541,12 @@ def ptr(instruction, m1)
 
 	#Range Check1
 	if num1 < 0 or num1 > 65535 then
-		printf("First pointer is out of range\n\n")
+		#printf("First pointer is out of range\n\n")
 		return false
 	end
 	#Range Check2
 	if num2 < 0 or num2 > 4294836225 then
-		printf("Second pointer is out of range\n\n")
+		#printf("Second pointer is out of range\n\n")
 		return false
 	end
 
@@ -2559,18 +2558,18 @@ def ptr(instruction, m1)
 	else
 		num2a = littleend(zeropad(num2.to_s(16), 8))
 		instruction_alt = objdump(m1 + num2a + num1)
-		printf("%-34s%-15s\n\n", m1 + num2a + num1, instruction_alt)	
+		#printf("%-34s%-15s\n\n", m1 + num2a + num1, instruction_alt)	
 		sanity_check(m1 + num2a + num1, instruction)	#See if this output matches nasms
 
 		num2b = littleend(zeropad(num2.to_s(16), 4))
 		m1 = m1.gsub(/^(.+)$/i, '66\1')
 		instruction_alt = objdump(m1 + num2b + num1)
-		printf("%-34s%-15s (WORD Size Alternate)\n\n", m1 + num2b + num1, instruction_alt)	
+		#printf("%-34s%-15s (WORD Size Alternate)\n\n", m1 + num2b + num1, instruction_alt)	
 		return 1		
 	end
 
 	instruction_alt = objdump(m1 + num2 + num1)
-	printf("%-34s%-15s\n\n", m1 + num2 + num1, instruction_alt)	
+	#printf("%-34s%-15s\n\n", m1 + num2 + num1, instruction_alt)	
 	sanity_check(m1 + num2 + num1, instruction)	#See if this output matches nasms
 	return 1
 end
@@ -2671,22 +2670,22 @@ def opmodrm(instruction, m1, num)
 		if /^dec/i.match(instruction) and /FF$/i.match(m1) then
 			plusreg(instruction, "48")
 			instruction_alt = objdump(m1 + modrm)
-			printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)
+			#printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)
 		elsif /^inc/i.match(instruction) and /FF$/i.match(m1) then
 			plusreg(instruction, "40")
 			instruction_alt = objdump(m1 + modrm)
-			printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)
+			#printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)
 		elsif /^pop/i.match(instruction) and /8F$/i.match(m1) then
 			plusreg(instruction, "58")
 			instruction_alt = objdump(m1 + modrm)
-			printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)		
+			#printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)		
 		elsif /^push/i.match(instruction) and /FF$/i.match(m1) then
 			plusreg(instruction, "50")
 			instruction_alt = objdump(m1 + modrm)
-			printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)					
+			#printf("%-34s%-15s (ModRM Alternate)\n\n", m1 + modrm, instruction_alt)					
 		else
 			instruction_alt = objdump(m1 + modrm)
-			printf("%-34s%-15s\n\n", m1 + modrm, instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + modrm, instruction_alt)
 		end
 		return 1	
 	end
@@ -2749,7 +2748,7 @@ end
 
 def zeropad (data, bytes)
 	#A function that adds leading zeros for the specified amount
-	#of bytes. Maybe this could be a sprintf equiv...
+	#of bytes. Maybe this could be a s#printf equiv...
 	len = data.length	
 	zeros = bytes - len
 	data = ('0' * zeros + data).upcase
@@ -2800,15 +2799,15 @@ end
 def modrmimm_results (multiplier_p, esp_areg_p, m1, modrm_p, s_operand_p, instruction, register_p, mreg_p, offset, sib_p)		
 	if multiplier_p == '0' and !esp_areg_p then
 		instruction_alt = objdump(m1 + modrm_p + s_operand_p)			
-		printf("%-34s%-15s\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
 		sanity_check(m1 + modrm_p + s_operand_p, instruction)	#See if this output matches nasms
 	elsif !register_p and !multiplier_p and !mreg_p and offset then
 		instruction_alt = objdump(m1 + modrm_p + s_operand_p)			
-		printf("%-34s%-15s\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1 + modrm_p + s_operand_p, instruction_alt)
 		sanity_check(m1 + modrm_p + s_operand_p, instruction)	#See if this output matches nasms
 	else 
 		instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)			
-		printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)		
+		#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)		
 		sanity_check(m1 + modrm_p + sib_p + s_operand_p, instruction)	#See if this output matches nasms
 	end
 end
@@ -2817,15 +2816,15 @@ def modrmimm_results_so1 (multiplier_p, esp_areg_p, m1, modrm_p, instruction, re
 	#Source operand is 1, and is built into instruction opcode
 	if multiplier_p == '0' and !esp_areg_p then
 		instruction_alt = objdump(m1 + modrm_p)		
-		printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
 		sanity_check(m1 + modrm_p, instruction)	#See if this output matches nasms
 	elsif !register_p and !multiplier_p and !mreg_p and offset then
 		instruction_alt = objdump(m1 + modrm_p)		
-		printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
 		sanity_check(m1 + modrm_p, instruction)	#See if this output matches nasms
 	else 
 		instruction_alt = objdump(m1 + modrm_p + sib_p)		
-		printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p, instruction_alt)
+		#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p, instruction_alt)
 		sanity_check(m1 + modrm_p + sib_p, instruction)	#See if this output matches nasms
 	end
 end
@@ -2834,36 +2833,36 @@ def modrmmodrm_results (multiplier_p, esp_areg_p, m1, modrm_p, instruction, regi
 	if ebp_areg and offset == '0' then
 		if multiplier_p == '0' and !esp_areg_p then
 			instruction_alt = objdump(m1 + modrm_p + '00')				
-			printf("%-34s%-15s\n\n", m1 + modrm_p + '00', instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + modrm_p + '00', instruction_alt)
 			sanity_check(m1 + modrm_p + '00', instruction)	#See if this output matches nasms
 		else 
 			instruction_alt = objdump(m1 + modrm_p + sib_p + '00')				
-			printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + '00', instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + '00', instruction_alt)
 			sanity_check(m1 + modrm_p + sib_p + '00', instruction)	#See if this output matches nasms
 		end
 	else
 		if offset != '0'		#if there's a displacment
 			if multiplier_p == '0' and !esp_areg_p then
 				instruction_alt = objdump(m1 + modrm_p + offset)			
-				printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
 				sanity_check(m1 + modrm_p + offset, instruction)	#See if this output matches nasms
 			elsif !register_p and !multiplier_p and !mreg_p and offset then
 				instruction_alt = objdump(m1 + modrm_p + offset)				
-				printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
 				sanity_check(m1 + modrm_p + offset, instruction)	#See if this output matches nasms
 			else 
 				instruction_alt = objdump(m1 + modrm_p + sib_p + offset)			
-				printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + offset, instruction_alt)				
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + offset, instruction_alt)				
 				sanity_check(m1 + modrm_p + sib_p + offset, instruction)	#See if this output matches nasms
 			end
 		else
 			if multiplier_p == '0' and !esp_areg_p then
 				instruction_alt = objdump(m1 + modrm_p)				
-				printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
 				sanity_check(m1 + modrm_p, instruction)	#See if this output matches nasms
 			else 
 				instruction_alt = objdump(m1 + modrm_p + sib_p)				
-				printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p, instruction_alt)
 				sanity_check(m1 + modrm_p + sib_p, instruction)	#See if this output matches nasms
 			end
 		end
@@ -2907,36 +2906,36 @@ def opmodrm_results (multiplier_p, esp_areg_p, m1, modrm_p, instruction, registe
 	if ebp_areg and offset == '0' then
 		if multiplier_p == '0' and !esp_areg_p then
 			instruction_alt = objdump(m1 + modrm_p + '00')				
-			printf("%-34s%-15s\n\n", m1 + modrm_p + '00', instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + modrm_p + '00', instruction_alt)
 			sanity_check(m1 + modrm_p + '00', instruction)	#See if this output matches nasms
 		else 
 			instruction_alt = objdump(m1 + modrm_p + sib_p + '00')				
-			printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + '00', instruction_alt)
+			#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + '00', instruction_alt)
 			sanity_check(m1 + modrm_p + sib_p + '00', instruction)	#See if this output matches nasms
 		end
 	else
 		if offset != '0'		#if there's a displacment
 			if multiplier_p == '0' and !esp_areg_p then
 				instruction_alt = objdump(m1 + modrm_p + offset)			
-				printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
 				sanity_check(m1 + modrm_p + offset, instruction)	#See if this output matches nasms
 			elsif !register_p and !multiplier_p and !mreg_p and offset then
 				instruction_alt = objdump(m1 + modrm_p + offset)				
-				printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + offset, instruction_alt)
 				sanity_check(m1 + modrm_p + offset, instruction)	#See if this output matches nasms
 			else 
 				instruction_alt = objdump(m1 + modrm_p + sib_p + offset)			
-				printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + offset, instruction_alt)				
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p + offset, instruction_alt)				
 				sanity_check(m1 + modrm_p + sib_p + offset, instruction)	#See if this output matches nasms
 			end
 		else
 			if multiplier_p == '0' and !esp_areg_p then
 				instruction_alt = objdump(m1 + modrm_p)				
-				printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p, instruction_alt)
 				sanity_check(m1 + modrm_p, instruction)	#See if this output matches nasms
 			else 
 				instruction_alt = objdump(m1 + modrm_p + sib_p)				
-				printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p, instruction_alt)
+				#printf("%-34s%-15s\n\n", m1 + modrm_p + sib_p, instruction_alt)
 				sanity_check(m1 + modrm_p + sib_p, instruction)	#See if this output matches nasms
 			end
 		end
@@ -2974,7 +2973,7 @@ def pointer (negative, reg_a, reg_b, register, s_operand, offset, multiplier, mr
 			mreg = register
 			register = 'esp'
 		else 
-			printf("esp is an invalid Scaled Index\n\n") 
+			#printf("esp is an invalid Scaled Index\n\n") 
 			return ["error", '0', '0', '0', '0', '0', '0']
 		end
 	end	
@@ -2984,7 +2983,7 @@ def pointer (negative, reg_a, reg_b, register, s_operand, offset, multiplier, mr
 		if $debug == 1 then puts "reg1 is %s" % reg_a end
 		if $debug == 1 then puts "reg2 is %s" % reg_b end
 		if reg_a == 'esp' and reg_b == 'esp' then
-			printf("esp is an invalid Scaled Index\n\n") 
+			#printf("esp is an invalid Scaled Index\n\n") 
 			return ["error", '0', '0', '0', '0', '0', '0']
 		end
 		if reg_b == 'esp' then			#esp can't be scaled / can't be 2nd register
@@ -3156,7 +3155,7 @@ def pointer2 (negative, reg_a, reg_b, register, offset, multiplier, mreg, reg1, 
 			mreg = register
 			register = 'esp'
 		else 
-			printf("esp is an invalid Scaled Index\n\n") 
+			#printf("esp is an invalid Scaled Index\n\n") 
 			return ["error", '0', '0', '0', '0', '0', '0', '0']
 		end
 	end	
@@ -3166,7 +3165,7 @@ def pointer2 (negative, reg_a, reg_b, register, offset, multiplier, mreg, reg1, 
 		if $debug == 1 then puts "reg1 is %s" % reg_a end
 		if $debug == 1 then puts "reg2 is %s" % reg_b end
 		if reg_a == 'esp' and reg_b == 'esp' then
-			printf("esp is an invalid Scaled Index\n\n") 
+			#printf("esp is an invalid Scaled Index\n\n") 
 			return ["error", '0', '0', '0', '0', '0', '0', '0']
 		end
 		if reg_b == 'esp' then			#esp can't be scaled / can't be 2nd register
@@ -3349,7 +3348,7 @@ def pointer3 (negative, reg_a, reg_b, register, offset, multiplier, mreg, num)
 			mreg = register
 			register = 'esp'
 		else 
-			printf("esp is an invalid Scaled Index\n\n") 
+			#printf("esp is an invalid Scaled Index\n\n") 
 			return ["error", '0', '0', '0', '0', '0', '0']
 		end
 	end	
@@ -3359,7 +3358,7 @@ def pointer3 (negative, reg_a, reg_b, register, offset, multiplier, mreg, num)
 		if $debug == 1 then puts "reg1 is %s" % reg_a end
 		if $debug == 1 then puts "reg2 is %s" % reg_b end
 		if reg_a == 'esp' and reg_b == 'esp' then
-			printf("esp is an invalid Scaled Index\n\n") 
+			#printf("esp is an invalid Scaled Index\n\n") 
 			return ["error", '0', '0', '0', '0', '0', '0']
 		end
 		if reg_b == 'esp' then			#esp can't be scaled / can't be 2nd register
@@ -3522,7 +3521,7 @@ def fcpmodrmimm (reg_a, reg_b, tworegs, modrm_p, sib_p, s_operand_p, esp_areg_p,
 		#Re-Process
 		modrm_p, sib_p, s_operand_p, esp_areg_p, multiplier_p, register_p, mreg_p = pointer(negative, reg_a, reg_b, register, s_operand, offset, multiplier, mreg, num)
 		instruction_alt = objdump(m1+modrm_p+sib_p + s_operand_p)
-		printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
+		#printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
 		return 1
 	end
 	return false
@@ -3547,10 +3546,10 @@ def disp8to32modrmimm (offset, negative, s_operand_p, s_operand, modrm_p, regist
 				return false
 			elsif multiplier_p == '0' and !esp_areg_p then			
 				instruction_alt = objdump(m1 + modrm_p + s_operand_p)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + s_operand_p, instruction_alt)
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + s_operand_p, instruction_alt)
 			elsif 
 				instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt) 
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt) 
 			else
 				return false
 			end
@@ -3565,10 +3564,10 @@ def addnullmodrmimm (offset, modrm_p, m1, sib_p, s_operand_p, register_p, multip
 		modrm_p = zeropad(((modrm_p.to_i(16).to_s(10)).to_i + 64).to_s(16), 2)	#modify to be disp8
 		if multiplier_p == '0' and !esp_areg_p then
 			instruction_alt = objdump(m1+modrm_p + '00' + s_operand_p)
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00' + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00' + s_operand_p, instruction_alt)
 		else
 			instruction_alt = objdump(m1+modrm_p + sib_p + '00' + s_operand_p)
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
 		end
 		return 1
 	end	
@@ -3583,7 +3582,7 @@ def addnullfcpmodrmimm (reg_a, reg_b, tworegs, modrm_p, sib_p, s_operand_p, esp_
 		modrm_p, sib_p, s_operand_p, esp_areg_p, multiplier_p, register_p, mreg_p = pointer(negative, reg_a, reg_b, register, s_operand, offset, multiplier, mreg, num)
 		modrm_p = zeropad(((modrm_p.to_i(16).to_s(10)).to_i + 64).to_s(16), 2)	#modify to be disp8
 		instruction_alt = objdump(m1+modrm_p + sib_p + '00' + s_operand_p)
-		printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
+		#printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
 		return 1
 	end	
 	return false
@@ -3606,7 +3605,7 @@ def sibdoublemodrmimm (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, s_operand_
 			if reg_a == 'ebp' then s_operand_p = '000000' + s_operand_p	#Effectively removes the extra null for ebp
 			else s_operand_p = '00000000' + s_operand_p end
 			instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)
-			printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
 		else
 			if (disp_to_dec(offset) < 128 and negative != '1') or (disp_to_dec(offset) < 129 and negative == '1')
 				if extracted = /^[0-9]/i.match(offset) then 		#If decimal (not hex) formatted
@@ -3618,7 +3617,7 @@ def sibdoublemodrmimm (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, s_operand_
 			end
 			#Make s_operand_p disp32
 			instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)
-			printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
 		end
 		return 1
 	end	
@@ -3648,7 +3647,7 @@ def fcpmodrm8imm_so1 (reg_a, reg_b, tworegs, modrm_p, sib_p, s_operand_p, esp_ar
 		modrm_p, sib_p, s_operand_p, esp_areg_p, multiplier_p, register_p, mreg_p = pointer(negative, reg_a, reg_b, register, s_operand, offset, multiplier, mreg, num)
 		s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01
 		instruction_alt = objdump(m1+modrm_p+sib_p + s_operand_p)
-		printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
+		#printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
 		return 1
 	end
 	return false
@@ -3674,11 +3673,11 @@ def disp8to32modrm8imm_so1 (offset, negative, s_operand_p, s_operand, modrm_p, r
 			elsif multiplier_p == '0' and !esp_areg_p then			
 				s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01				
 				instruction_alt = objdump(m1 + modrm_p + s_operand_p)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + s_operand_p, instruction_alt)
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + s_operand_p, instruction_alt)
 			elsif 
 				s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01	
 				instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt) 
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt) 
 			else
 				return false
 			end
@@ -3694,11 +3693,11 @@ def addnullmodrm8imm_so1 (offset, modrm_p, m1, sib_p, s_operand_p, register_p, m
 		if multiplier_p == '0' and !esp_areg_p then
 			s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01	
 			instruction_alt = objdump(m1+modrm_p + '00' + s_operand_p)
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00' + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00' + s_operand_p, instruction_alt)
 		else
 			s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01		
 			instruction_alt = objdump(m1+modrm_p + sib_p + '00' + s_operand_p)
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
 		end
 		return 1
 	end
@@ -3714,7 +3713,7 @@ def addnullfcpmodrm8imm_so1 (reg_a, reg_b, tworegs, modrm_p, sib_p, s_operand_p,
 		modrm_p = zeropad(((modrm_p.to_i(16).to_s(10)).to_i + 64).to_s(16), 2)	#modify to be disp8
 		s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01
 		instruction_alt = objdump(m1+modrm_p + sib_p + '00' + s_operand_p)
-		printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
+		#printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
 		return 1
 	end
 	return false
@@ -3738,7 +3737,7 @@ def sibdoublemodrm8imm_so1 (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, s_ope
 			else s_operand_p = '00000000' + s_operand_p end
 			s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01
 			instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)
-			printf("%-34s%-15s (SIB Double and Explicit imm8)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (SIB Double and Explicit imm8)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
 		else
 			if (disp_to_dec(offset) < 128 and negative != '1') or (disp_to_dec(offset) < 129 and negative == '1')
 				if extracted = /^[0-9]/i.match(offset) then 		#If decimal (not hex) formatted
@@ -3751,7 +3750,7 @@ def sibdoublemodrm8imm_so1 (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, s_ope
 			#Make s_operand_p disp32
 			s_operand_p = s_operand_p.gsub(/01$/i, '') #remove the ending 0x01
 			instruction_alt = objdump(m1 + modrm_p + sib_p + s_operand_p)
-			printf("%-34s%-15s (SIB Double and Explicit imm8)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
+			#printf("%-34s%-15s (SIB Double and Explicit imm8)\n", m1 + modrm_p + sib_p + s_operand_p, instruction_alt)
 		end
 		return 1
 	end
@@ -3768,13 +3767,13 @@ def fcpmodrmmodrm (reg_a, reg_b, tworegs, modrm_p, sib_p, esp_areg_p, multiplier
 		if offset.length > 2 then offset = littleend(offset) end #make little endian if more than 1 byte
 		if reg_a == 'ebp' and disp_to_dec(offset) == 0 then
 			instruction_alt = objdump(m1+modrm_p+sib_p + '00')
-			printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
+			#printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
 		elsif disp_to_dec(offset) != 0 then
 			instruction_alt = objdump(m1+modrm_p+sib_p + offset)
-			printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
+			#printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
 		else
 			instruction_alt = objdump(m1+modrm_p+sib_p)
-			printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p, instruction_alt)			
+			#printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p, instruction_alt)			
 		end
 		return 1
 	end
@@ -3810,10 +3809,10 @@ def disp8to32modrmmodrm (offset, negative, modrm_p, register_p, multiplier_p, mr
 				return false
 			elsif multiplier_p == '0' and !esp_areg_p then			
 				instruction_alt = objdump(m1 + modrm_p + offset)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + offset, instruction_alt)
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + offset, instruction_alt)
 			elsif 
 				instruction_alt = objdump(m1 + modrm_p + sib_p + offset)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + offset, instruction_alt) 
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + offset, instruction_alt) 
 			else
 				return false
 			end
@@ -3829,10 +3828,10 @@ def addnullmodrmmodrm (offset, modrm_p, m1, sib_p, register_p, multiplier_p, esp
 		modrm_p = zeropad(((modrm_p.to_i(16).to_s(10)).to_i + 64).to_s(16), 2)	#modify to be disp8
 		if multiplier_p == '0' and !esp_areg_p then
 			instruction_alt = objdump(m1+modrm_p + '00')
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00', instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00', instruction_alt)
 		else
 			instruction_alt = objdump(m1+modrm_p + sib_p + '00')
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
 		end
 		return 1
 	end
@@ -3847,7 +3846,7 @@ def addnullfcpmodrmmodrm (reg_a, reg_b, tworegs, modrm_p, sib_p, esp_areg_p, mul
 		modrm_p, sib_p, offset, esp_areg_p, multiplier_p, register_p, mreg_p = pointer2(negative, reg_a, reg_b, register, offset, multiplier, mreg, reg1, tworegs)
 		modrm_p = zeropad(((modrm_p.to_i(16).to_s(10)).to_i + 64).to_s(16), 2)	#modify to be disp8
 		instruction_alt = objdump(m1+modrm_p + sib_p + '00')
-		printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
+		#printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
 		return 1
 	end
 	return false
@@ -3880,7 +3879,7 @@ def sibdoublemodrmmodrm (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, m1, nega
 		if disp_to_dec(offset) == 0 then
 			offset = '00000000'
 			instruction_alt = objdump(m1 + modrm_p + sib_p + offset)
-			printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
+			#printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
 		else
 			if (disp_to_dec(offset) < 128 and negative != '1') or (disp_to_dec(offset) < 129 and negative == '1')
 				if extracted = /^[0-9]/i.match(offset) then 		#If decimal (not hex) formatted
@@ -3895,7 +3894,7 @@ def sibdoublemodrmmodrm (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, m1, nega
 				offset = offset.gsub(/0x(.+)/, '\1')
 			end			
 			instruction_alt = objdump(m1 + modrm_p + sib_p + offset)
-			printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
+			#printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
 		end
 		return 1
 	end
@@ -3909,7 +3908,7 @@ def fcpopmodrm (reg_a, reg_b, tworegs, modrm_p, sib_p, esp_areg_p, multiplier_p,
 		#Re-Process
 		modrm_p, sib_p, offset, esp_areg_p, multiplier_p, register_p, mreg_p = pointer3(negative, reg_a, reg_b, register, offset, multiplier, mreg, num)
 		instruction_alt = objdump(m1+modrm_p+sib_p)
-		printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p, instruction_alt)
+		#printf("%-34s%-15s (Forced commutative property)\n", m1 + modrm_p + sib_p, instruction_alt)
 		return 1
 	end
 	return false
@@ -3939,10 +3938,10 @@ def disp8to32opmodrm (offset, negative, modrm_p, register_p, multiplier_p, mreg_
 				return false
 			elsif multiplier_p == '0' and !esp_areg_p then			
 				instruction_alt = objdump(m1 + modrm_p)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + offset, instruction_alt)
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + offset, instruction_alt)
 			elsif 
 				instruction_alt = objdump(m1 + modrm_p + sib_p)
-				printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + offset, instruction_alt) 
+				#printf("%-34s%-15s (disp8 -> disp32 extended)\n", m1 + modrm_p + sib_p + offset, instruction_alt) 
 			else
 				return false
 			end
@@ -3957,10 +3956,10 @@ def addnullopmodrm (offset, modrm_p, m1, sib_p, register_p, multiplier_p, esp_ar
 		modrm_p = zeropad(((modrm_p.to_i(16).to_s(10)).to_i + 64).to_s(16), 2)	#modify to be disp8
 		if multiplier_p == '0' and !esp_areg_p then
 			instruction_alt = objdump(m1+modrm_p + '00')
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00', instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + '00', instruction_alt)
 		else
 			instruction_alt = objdump(m1+modrm_p + sib_p + '00')
-			printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
+			#printf("%-34s%-15s (Additional null disp8)\n", m1 + modrm_p + sib_p + '00', instruction_alt)
 		end
 		return 1
 	end	
@@ -3975,7 +3974,7 @@ def addnullfcpopmodrm (reg_a, reg_b, tworegs, modrm_p, sib_p, esp_areg_p, multip
 		modrm_p, sib_p, s_operand_p, esp_areg_p, multiplier_p, register_p, mreg_p = pointer3(negative, reg_a, reg_b, register, offset, multiplier, mreg, num)
 		modrm_p = zeropad(((modrm_p.to_i(16).to_s(10)).to_i + 64).to_s(16), 2)	#modify to be disp8
 		instruction_alt = objdump(m1+modrm_p + sib_p + '00' + s_operand_p)
-		printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
+		#printf("%-34s%-15s (Forced commutative property, Additional null disp8)\n", m1 + modrm_p + sib_p + '00' + s_operand_p, instruction_alt)
 		return 1
 	end	
 	return false
@@ -4000,7 +3999,7 @@ def sibdoubleopmodrm (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, m1, negativ
 			end
 			padding = '00000000'
 			instruction_alt = objdump(m1 + modrm_p + sib_p + padding)
-			printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + padding, instruction_alt)
+			#printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + padding, instruction_alt)
 		else
 
 			#zeros out 2 most significant bits
@@ -4014,7 +4013,7 @@ def sibdoubleopmodrm (tworegs, reg_a, reg_b, modrm_p, sib_p, offset, m1, negativ
 			end
 			#Make s_operand_p disp32
 			instruction_alt = objdump(m1 + modrm_p + sib_p + offset)
-			printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
+			#printf("%-34s%-15s (SIB Double)\n", m1 + modrm_p + sib_p + offset, instruction_alt)
 		end
 		return 1
 	end	
@@ -4032,7 +4031,7 @@ def nasm (data)
 		machine_code = `xxd -ps -g 16 tmp 2>/dev/null`
 		machine_code = (machine_code.chomp).upcase
 		if machine_code.length > 0 then
-			printf("%-34s%-15s(Provided by Nasm)\n\n", machine_code, objdump(machine_code))
+			#printf("%-34s%-15s(Provided by Nasm)\n\n", machine_code, objdump(machine_code))
 			system('rm tmp tmp.asm')
 		else
 			file = File.open("tmp.asm", "w")
@@ -4043,7 +4042,7 @@ def nasm (data)
 			machine_code = `xxd -ps -g 16 tmp 2>/dev/null`
 			machine_code = (machine_code.chomp).upcase
 			if machine_code.length > 0 then
-				printf("%-34s%-15s(Provided by Nasm)\n\n", machine_code, objdump64(machine_code))
+				#printf("%-34s%-15s(Provided by Nasm)\n\n", machine_code, objdump64(machine_code))
 				system('rm tmp tmp.asm 2> /dev/null')
 			else
 				puts "There was an error with your Assembly (or I couldn't parse it)\n\n"			
