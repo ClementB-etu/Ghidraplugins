@@ -16,8 +16,12 @@ def main
 # 	Read Each Instruction From Input		#
 #--------------------------------------------
 
+	$list = []
+
 	while asm = Readline.readline('irasm > ', true)
-		asm = asm.chomp						#Get assembly instruction
+		
+		asm = asm.chomp							#Get assembly instruction
+		$list = []								#Resetting the list of known
 		if /(quit|(?<!s)exit)/i.match(asm)		#If it's quit or exit
 			exit								#	Exit the script
 		end										#Otherwise start looking for instruction names
@@ -1126,6 +1130,11 @@ def main
 		else 
 			nasm(asm) 
 		end
+
+		if !$list.empty?
+			puts "Results : " 
+			puts $list 
+		end
 	end
 	
 
@@ -1614,9 +1623,15 @@ def fence (instruction, m1, m2)
 	instruction_alt = objdump(m1 + m2)	
 	printf("%-34s%-15s\n\n", m1 + m2, instruction_alt)
 	for i in 1..7
-		printf("%-34s%-15s\n", (m1 + (m2.hex.to_s(10).to_i + i).to_s(16)).upcase, instruction)
+		machinecode = (m1 + (m2.hex.to_s(10).to_i + i).to_s(16)).upcase
+		
+		$list.push(machinecode)
+
+		printf("%-34s%-15s\n", machinecode, instruction)
 	end
 	puts "\n"
+
+
 	sanity_check(m1 + m2, instruction)	#See if this output matches nasms
 	return 1
 end
@@ -4066,6 +4081,9 @@ def objdump (data)
 		file.write(data)
 		file.close
 		cmd3 = 'cat tmp.m | xxd -r -p > tmp'
+
+		$list.push(data)
+
 		system(cmd3)
 		if /objdump/i.match(cmd)
 			cmd = `objdump -M intel -D -b binary -mi386 tmp`
@@ -4089,6 +4107,9 @@ def objdump64 (data)
 		file.write(data)
 		file.close
 		cmd3 = 'cat tmp.m | xxd -r -p > tmp'
+
+		$list.push(data)
+
 		system(cmd3)
 		if /objdump/i.match(cmd)
 			cmd = `objdump -M intel -D -b binary -ml1om tmp`
@@ -4103,5 +4124,6 @@ def objdump64 (data)
 		return "[need objdump for asm output]"
 	end
 end
+
 
 main
