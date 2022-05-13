@@ -36,20 +36,19 @@ import java.lang.Math;
 import java.util.HashMap;
 import java.util.Map;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.OutputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Scanner;
-import java.io.FileNotFoundException;
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.file.*;
+import java.util.Arrays;
 
+/*
+ * TODO
+ * Extraire la séquence de bytes (code machine) aux adresses des instructions pour comparaison
+ *
+ * Converir String en Instruction 
+ * Traitement de arrOfInfos
+ *
+*/
 
 public class FourthScript extends GhidraScript {
 
@@ -64,29 +63,41 @@ public class FourthScript extends GhidraScript {
             return;
         }
 
-        /* 
-            ITERATES THROUGH INSTRUCTIONS
-        */
-            
         Listing listing = currentProgram.getListing();
-        InstructionIterator listit = listing.getInstructions(true);
+        InstructionIterator listIt = listing.getInstructions(true);
 
+        /*
+        * Map<String, Address> instrAddr : map associant Instruction et son adresse dans l'exécutable
+        * Map<String, String[]> instrInfo : map associant Instruction et les différentes possibilités de son code machine
+        */
+
+        Map<String, Address> instrAddr = new HashMap<String, Address>();
+        Map<String, String[]> instrInfo = new HashMap<String, String[]>();
+
+        /*
+        * ProcessBuilder : process used to run irasm and to retrieve the differents options of machine code for an instruction in log.txt
+        */
         ProcessBuilder pb = new ProcessBuilder("ruby", "irasmCustomd.rb");
         pb.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/POC - SHAchecksum/Tools"));
-        var log = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/log.txt");
+        File log = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/log.txt");
+
+        if(!log.exists())
+        {
+            log.createNewFile();
+        }
+            
         pb.redirectOutput(log);
         Process proc = pb.start();
-
-        InputStream errStream = proc.getErrorStream();
-        InputStream inStream = proc.getInputStream();
         OutputStream outStream = proc.getOutputStream();
 
         int cpt = 0;
-        while ((listit.hasNext())) {
-            Instruction instr = listit.next();
+        while ((listIt.hasNext())) {
 
-            Address addrinst = instr.getAddress();
-            String mnemo = instr.getMnemonicString();
+            Instruction instr = listIt.next();
+
+            Address instaddr = instr.getAddress();
+            instrAddr.put(instr.toString(),instaddr);
+
             String instrfin = instr + "\n";
 
             if (cpt != 0) 
@@ -97,39 +108,53 @@ public class FourthScript extends GhidraScript {
             outStream.write(instrfin.getBytes());
             outStream.flush();
 
-            try (var reader = new BufferedReader(new InputStreamReader(inStream)))
-            { 
-                
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
-
-            }
-               
-            catch(Exception e)
-            {
-			    e.printStackTrace();
-            }
         }
 
-
-
-        //Readline vide ? 
+        outStream.close();
+        proc.waitFor();
+    
+        //Lecture de log.txt
         
-        Path file = Paths.get("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/log.txt");
-        Charset charset = Charset.forName("US-ASCII");
-        try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
+        Scanner scan = new Scanner(log);
+        String line;
+        String infos;
+        String[] arrOfInfos;
+        
+        while(scan.hasNextLine()) {
+            line = scan.nextLine().trim();
+            infos = "";
 
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                println(line);
-            }
+            if (line.startsWith("->") && (scan.hasNextLine()))
+            {
+                line = line.substring(2); //Remove "->"
+                infos = scan.nextLine().trim();
+                while (infos.isEmpty())
+                    infos = scan.nextLine().trim();
 
-        } catch (IOException x) {
-            System.err.format("IOException: %s%n", x);
+                arrOfInfos = infos.split(" ",0);
+
+                instrInfo.put(line,arrOfInfos);
+                //Traitement à faire sur arrOfInfos (être sur qu'il n'y a que du code machine)
+                /*for (int i = 0; i < arrOfInfos.length; i++)
+                    println(" > : " + arrOfInfos[i]);*/
+            }      
+        }
+        
+        scan.close();
+        
+        Memory mem = currentProgram.getMemory();
+
+        for (Map.Entry<String, Address> entry : instrAddr.entrySet()) {
+            printf(" > " + entry.getKey() +" -> ");
+            printf(" byte : " + mem.getByte​(entry.getValue()) + "\n"); //byte at the address stored in the map ? 
+        }
+
+        for (Map.Entry<String, String[]> entry : instrInfo.entrySet()) {
+            printf("  > " + entry.getKey() + ": \n");
+            /*
+                for (int i = 0; i < entry.getValue().length; i++)
+                    println(" -> : " + entry.getValue()[i]);
+            */
         }
     }
-
 }

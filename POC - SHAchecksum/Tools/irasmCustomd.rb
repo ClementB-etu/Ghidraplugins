@@ -1134,9 +1134,10 @@ def main
 
 			res = $list.join(" ")
 			Readline.readline(res, false) #Pour utiliser la sortie standard (et pouvoir lire correctement les résultats dans le log)
+			
 		else 
 
-			Readline.readline("INSTRUCTION NON VALIDE", false) #Pour utiliser la sortie standard (et pouvoir lire correctement les résultats dans le log)
+			Readline.readline("NON_VALID_INSTR", false) #Pour utiliser la sortie standard (et pouvoir lire correctement les résultats dans le log)
 			
 		end
 	end
