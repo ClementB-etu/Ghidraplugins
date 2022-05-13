@@ -1,0 +1,2 @@
+[BITS 32]
+ADD ptr [EAX],AL

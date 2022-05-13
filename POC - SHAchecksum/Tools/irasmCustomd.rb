@@ -17,7 +17,7 @@ def main
 #--------------------------------------------
 
 
-	while asm = Readline.readline('irasm > ', true)
+	while asm = Readline.readline('->', true).chomp
 		
 		asm = asm.chomp							#Get assembly instruction
 		$list = []								#creatting / Resetting the list of known
@@ -1131,8 +1131,13 @@ def main
 		end
 
 		if !$list.empty?
-			printf("Results : ");
-			puts $list 
+
+			res = $list.join(" ")
+			Readline.readline(res, false) #Pour utiliser la sortie standard (et pouvoir lire correctement les résultats dans le log)
+		else 
+
+			Readline.readline("INSTRUCTION NON VALIDE", false) #Pour utiliser la sortie standard (et pouvoir lire correctement les résultats dans le log)
+			
 		end
 	end
 	
@@ -4045,7 +4050,7 @@ def nasm (data)
 				#printf("%-34s%-15s(Provided by Nasm)\n\n", machine_code, objdump64(machine_code))
 				system('rm tmp tmp.asm 2> /dev/null')
 			else
-				puts "There was an error with your Assembly (or I couldn't parse it)\n\n"			
+				#puts "There was an error with your Assembly (or I couldn't parse it)\n\n"			
 			end
 		end
 	else
@@ -4065,7 +4070,7 @@ def sanity_check (code, data)
 		machine_code = machine_code.chomp
 		if machine_code.length > 0 then
 			if machine_code.upcase != code.upcase then
-				puts "My output ( #{machine_code.upcase} ) doesn't match that of nasm, something may be wrong here\n\n"
+				#puts "My output ( #{machine_code.upcase} ) doesn't match that of nasm, something may be wrong here\n\n"
 			end
 			system('rm tmp tmp.asm 2>/dev/null')
 		end

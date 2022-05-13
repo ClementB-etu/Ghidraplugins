@@ -21,7 +21,6 @@
 
 import ghidra.app.script.GhidraScript;
 
-
 import ghidra.program.model.address.Address;
 import ghidra.program.model.mem.Memory;
 import ghidra.program.model.listing.Listing;
@@ -36,9 +35,6 @@ import ghidra.util.Msg;
 import java.lang.Math;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.List;
-import java.util.Set;
-import java.util.Iterator;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -46,6 +42,13 @@ import java.io.OutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.InputStream;
+import java.util.Scanner;
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.charset.Charset;
 
 
 public class FourthScript extends GhidraScript {
@@ -68,48 +71,40 @@ public class FourthScript extends GhidraScript {
         Listing listing = currentProgram.getListing();
         InstructionIterator listit = listing.getInstructions(true);
 
-        ProcessBuilder pb = new ProcessBuilder("ruby", "irasm.rb");
-
+        ProcessBuilder pb = new ProcessBuilder("ruby", "irasmCustomd.rb");
         pb.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/POC - SHAchecksum/Tools"));
-
         var log = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/log.txt");
         pb.redirectOutput(log);
-
         Process proc = pb.start();
 
+        InputStream errStream = proc.getErrorStream();
+        InputStream inStream = proc.getInputStream();
+        OutputStream outStream = proc.getOutputStream();
 
-            InputStream errStream = proc.getErrorStream();
-            InputStream inStream = proc.getInputStream();
-            OutputStream outStream = proc.getOutputStream();
-
-        outStream.write("mov eax, 0x1\n".getBytes());
-        outStream.flush();
-
-        try (var reader = new BufferedReader(new InputStreamReader(proc.getInputStream()))) 
-        {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-
-        }
-
-
-        //p.destroy();
-
-        /*
-        while (listit.hasNext()) {
+        int cpt = 0;
+        while ((listit.hasNext())) {
             Instruction instr = listit.next();
 
             Address addrinst = instr.getAddress();
             String mnemo = instr.getMnemonicString();
-            
+            String instrfin = instr + "\n";
 
-            try
+            if (cpt != 0) 
+                instrfin = "\n".concat(instrfin);
+            else 
+                cpt = 1;
+
+            outStream.write(instrfin.getBytes());
+            outStream.flush();
+
+            try (var reader = new BufferedReader(new InputStreamReader(inStream)))
             { 
-                printf(instr + "\n");
                 
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
 
             }
                
@@ -118,7 +113,23 @@ public class FourthScript extends GhidraScript {
 			    e.printStackTrace();
             }
         }
-        */
+
+
+
+        //Readline vide ? 
+        
+        Path file = Paths.get("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/log.txt");
+        Charset charset = Charset.forName("US-ASCII");
+        try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
+
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                println(line);
+            }
+
+        } catch (IOException x) {
+            System.err.format("IOException: %s%n", x);
+        }
     }
 
 }
