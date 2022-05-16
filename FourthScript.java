@@ -23,6 +23,7 @@ import ghidra.app.script.GhidraScript;
 
 import ghidra.program.model.address.Address;
 import ghidra.program.model.mem.Memory;
+import ghidra.program.model.mem.MemBuffer;
 import ghidra.program.model.listing.Listing;
 import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.listing.InstructionIterator;
@@ -43,8 +44,8 @@ import java.util.Arrays;
 
 /*
  * TODO
- * Extraire la séquence de bytes (code machine) aux adresses des instructions pour comparaison
- *
+ * Traiter la dernière instruction ? (pas de next donc pas de taille)
+ * Traiter une seule fois les instructions (si déjà dans la map = déjà traité)
  * Converir String en Instruction 
  * Traitement de arrOfInfos
  *
@@ -71,7 +72,7 @@ public class FourthScript extends GhidraScript {
         * Map<String, String[]> instrInfo : map associant Instruction et les différentes possibilités de son code machine
         */
 
-        Map<String, Address> instrAddr = new HashMap<String, Address>();
+        Map<Instruction, String[]> instrBytes = new HashMap<Instruction, String[]>();
         Map<String, String[]> instrInfo = new HashMap<String, String[]>();
 
         /*
@@ -94,10 +95,30 @@ public class FourthScript extends GhidraScript {
         while ((listIt.hasNext())) {
 
             Instruction instr = listIt.next();
-
             Address instaddr = instr.getAddress();
-            instrAddr.put(instr.toString(),instaddr);
 
+            if (listIt.hasNext())
+            {
+                Address instnextaddr = instr.getNext().getAddress();
+                long size = instnextaddr.subtract(instaddr);
+
+                MemBuffer bytes = instr.getInstructionContext().getMemBuffer();
+                byte[] b = new byte[(int)size];
+                bytes.getBytes(b,0);
+
+                String[] bfinal = new String[(int)size];
+                for (int i = 0; i< b.length;i++)
+                {
+                    bfinal[i] = Integer.toHexString(b[i]);
+
+                    bfinal[i] = bfinal[i].replace("f","");
+
+                    printf(bfinal[i]+ " - ");
+                }
+                printf("\n");
+                instrBytes.put(instr,bfinal);
+            }   
+    
             String instrfin = instr + "\n";
 
             if (cpt != 0) 
@@ -134,27 +155,41 @@ public class FourthScript extends GhidraScript {
                 arrOfInfos = infos.split(" ",0);
 
                 instrInfo.put(line,arrOfInfos);
+
                 //Traitement à faire sur arrOfInfos (être sur qu'il n'y a que du code machine)
-                /*for (int i = 0; i < arrOfInfos.length; i++)
-                    println(" > : " + arrOfInfos[i]);*/
+
             }      
         }
         
         scan.close();
         
-        Memory mem = currentProgram.getMemory();
+        
+        /*for (Map.Entry<Instruction, String[]> entry : instrBytes.entrySet()) {
 
-        for (Map.Entry<String, Address> entry : instrAddr.entrySet()) {
-            printf(" > " + entry.getKey() +" -> ");
-            printf(" byte : " + mem.getByte​(entry.getValue()) + "\n"); //byte at the address stored in the map ? 
-        }
+            printf(" > " + entry.getKey() + " : [ACTUAL CODING] ");
 
-        for (Map.Entry<String, String[]> entry : instrInfo.entrySet()) {
-            printf("  > " + entry.getKey() + ": \n");
-            /*
-                for (int i = 0; i < entry.getValue().length; i++)
-                    println(" -> : " + entry.getValue()[i]);
-            */
+            for (int i = 0;i<entry.getValue().length;i++)
+            {
+                printf(entry.getValue()[i] +" ");
+            }
+
+            if (instrInfo.containsKey(entry.getKey().toString()))
+            {
+                printf(" [USUAL CODING] : ");
+                for (int i = 0; i < instrInfo.get(entry.getKey().toString()).length;i++)
+                    printf (instrInfo.get(entry.getKey().toString())[i] + " ");
+            }
+
+
+            printf("\n");
+                        
+
         }
+        */
+        
+        /*for (Map.Entry<String, String[]> entry : instrInfo.entrySet()) {
+            printf("  > " + entry.getKey() + "\n");
+    
+        }*/
     }
 }
