@@ -30,6 +30,7 @@ import ghidra.program.model.listing.InstructionIterator;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.FunctionIterator;
+import ghidra.program.model.listing.CodeUnit;
 
 
 import ghidra.util.Msg;
@@ -53,6 +54,13 @@ import java.util.Arrays;
 
 public class FourthScript extends GhidraScript {
 
+    protected void add_bookmark_comment(Address addr, String text) {
+
+        createBookmark(addr, "SearchForRedundancy", text);
+        currentProgram.getListing().getCodeUnitAt(addr).setComment(CodeUnit.EOL_COMMENT, text);
+
+    }
+
     @Override
     protected void run() throws Exception {
 
@@ -72,7 +80,7 @@ public class FourthScript extends GhidraScript {
         * Map<String, String[]> instrInfo : map associant Instruction et les différentes possibilités de son code machine
         */
 
-        Map<Instruction, String[]> instrBytes = new HashMap<Instruction, String[]>();
+        Map<Instruction, String> instrBytes = new HashMap<Instruction, String>();
         Map<String, String[]> instrInfo = new HashMap<String, String[]>();
 
         /*
@@ -96,6 +104,7 @@ public class FourthScript extends GhidraScript {
 
             Instruction instr = listIt.next();
             Address instaddr = instr.getAddress();
+            String byteseq = "";
 
             if (listIt.hasNext())
             {
@@ -107,16 +116,22 @@ public class FourthScript extends GhidraScript {
                 bytes.getBytes(b,0);
 
                 String[] bfinal = new String[(int)size];
+
                 for (int i = 0; i< b.length;i++)
                 {
                     bfinal[i] = Integer.toHexString(b[i]);
 
-                    bfinal[i] = bfinal[i].replace("f","");
+                    bfinal[i] = bfinal[i].replace("f","").toUpperCase();
+                    
+                    if (bfinal[i].length() != 2)
+                    {
+                        bfinal[i] = '0' + bfinal[i];
+                    }
 
-                    printf(bfinal[i]+ " - ");
+                    byteseq += bfinal[i];
                 }
-                printf("\n");
-                instrBytes.put(instr,bfinal);
+
+                instrBytes.put(instr,byteseq);
             }   
     
             String instrfin = instr + "\n";
@@ -147,8 +162,8 @@ public class FourthScript extends GhidraScript {
 
             if (line.startsWith("->") && (scan.hasNextLine()))
             {
-                line = line.substring(2); //Remove "->"
-                infos = scan.nextLine().trim();
+                line = line.replace("->","");
+                infos = scan.nextLine().trim().replace("->","");
                 while (infos.isEmpty())
                     infos = scan.nextLine().trim();
 
@@ -156,40 +171,45 @@ public class FourthScript extends GhidraScript {
 
                 instrInfo.put(line,arrOfInfos);
 
-                //Traitement à faire sur arrOfInfos (être sur qu'il n'y a que du code machine)
-
             }      
         }
         
         scan.close();
         
-        
-        /*for (Map.Entry<Instruction, String[]> entry : instrBytes.entrySet()) {
+        int cptv = 0;        
+        int cptf = 0;        
+        for (Map.Entry<Instruction, String> entry : instrBytes.entrySet()) {
 
-            printf(" > " + entry.getKey() + " : [ACTUAL CODING] ");
+            printf(" > " + entry.getKey() + "\n\t [ACTUAL CODING] : "+ entry.getValue());
+            
+            String[] expectedCoding = instrInfo.get(entry.getKey().toString());
 
-            for (int i = 0;i<entry.getValue().length;i++)
+            if (instrInfo.containsKey(entry.getKey().toString()) && (!Arrays.asList(expectedCoding).contains("NON_VALID_INSTR")))
             {
-                printf(entry.getValue()[i] +" ");
+                printf("\n\t [USUAL CODING] : ");
+                for (int i = 0; i < expectedCoding.length;i++)
+                {
+                    printf (expectedCoding[i] + " ");
+                    if (entry.getValue().equals(expectedCoding[i]))
+                    {
+                        printf("[YES] ");
+                        cptv++;
+                        break;
+
+                    } else {
+                        printf("[NO] ");
+                        cptf++;
+                        String bookmarkString = "WARNING : " + entry.getKey() + " not coded the way we expected it to be";
+                        add_bookmark_comment(entry.getKey().getAddress(), bookmarkString);
+                    }
+                    
+                }
+                
             }
 
-            if (instrInfo.containsKey(entry.getKey().toString()))
-            {
-                printf(" [USUAL CODING] : ");
-                for (int i = 0; i < instrInfo.get(entry.getKey().toString()).length;i++)
-                    printf (instrInfo.get(entry.getKey().toString())[i] + " ");
-            }
-
-
-            printf("\n");
-                        
-
+            printf("\n");              
         }
-        */
-        
-        /*for (Map.Entry<String, String[]> entry : instrInfo.entrySet()) {
-            printf("  > " + entry.getKey() + "\n");
-    
-        }*/
+        printf("\n\n" + cptv + " 'correctly' coded instructions ( " + cptv + " / " + (cptv+cptf) +" )\n");
+
     }
 }
