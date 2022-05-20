@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//My third script - version 3.0 - Trying to deobfuscate functions
+//Ghidra Script v1 - redundancy research
 //@category    Examples
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
@@ -52,7 +52,7 @@ import java.util.Arrays;
  *
 */
 
-public class FourthScript extends GhidraScript {
+public class Scriptv1 extends GhidraScript {
 
     protected void add_bookmark_comment(Address addr, String text) {
 
@@ -82,13 +82,14 @@ public class FourthScript extends GhidraScript {
 
         Map<Instruction, String> instrBytes = new HashMap<Instruction, String>();
         Map<String, String[]> instrInfo = new HashMap<String, String[]>();
-
+        
+     
         /*
         * ProcessBuilder : process used to run irasm and to retrieve the differents options of machine code for an instruction in log.txt
         */
         ProcessBuilder pb = new ProcessBuilder("ruby", "irasmCustomd.rb");
         pb.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/POC - SHAchecksum/Tools"));
-        File log = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/log.txt");
+        File log = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/logV1.txt");
 
         if(!log.exists())
         {
@@ -105,6 +106,7 @@ public class FourthScript extends GhidraScript {
             Instruction instr = listIt.next();
             Address instaddr = instr.getAddress();
             String byteseq = "";
+            String strInstr = "";
 
             if (listIt.hasNext())
             {
@@ -131,10 +133,12 @@ public class FourthScript extends GhidraScript {
                     byteseq += bfinal[i];
                 }
 
+                strInstr = instr.toString().replace("byte","").replace("dword","").replace("ptr","").replace("  "," ");
+                //printf("strInstr : " + strInstr + "\n");
                 instrBytes.put(instr,byteseq);
             }   
     
-            String instrfin = instr + "\n";
+            String instrfin = strInstr + "\n";
 
             if (cpt != 0) 
                 instrfin = "\n".concat(instrfin);
@@ -160,10 +164,11 @@ public class FourthScript extends GhidraScript {
             line = scan.nextLine().trim();
             infos = "";
 
-            if (line.startsWith("->") && (scan.hasNextLine()))
+            if (line.startsWith("->") && (scan.hasNextLine()) && (!line.equals("->")))
             {
                 line = line.replace("->","");
                 infos = scan.nextLine().trim().replace("->","");
+
                 while (infos.isEmpty())
                     infos = scan.nextLine().trim();
 
@@ -175,17 +180,22 @@ public class FourthScript extends GhidraScript {
         }
         
         scan.close();
-        
-        int cptv = 0;        
-        int cptf = 0;        
+  
+        int cptinstr = 0;   
+        int cptv = 0; 
         for (Map.Entry<Instruction, String> entry : instrBytes.entrySet()) {
 
-            printf(" > " + entry.getKey() + "\n\t [ACTUAL CODING] : "+ entry.getValue());
-            
-            String[] expectedCoding = instrInfo.get(entry.getKey().toString());
+            String tmpInstr = entry.getKey().toString().replace("byte","").replace("dword","").replace("ptr","").replace("  "," ");
+            String[] expectedCoding = instrInfo.get(tmpInstr);
 
-            if (instrInfo.containsKey(entry.getKey().toString()) && (!Arrays.asList(expectedCoding).contains("NON_VALID_INSTR")))
+            cptinstr++;
+
+            if (instrInfo.containsKey(tmpInstr) && (!Arrays.asList(expectedCoding).contains("NON_VALID_INSTR")))
             {
+
+                printf(" > " + entry.getKey() + "\n\t [ACTUAL CODING] : "+ entry.getValue());
+            
+                
                 printf("\n\t [USUAL CODING] : ");
                 for (int i = 0; i < expectedCoding.length;i++)
                 {
@@ -198,18 +208,21 @@ public class FourthScript extends GhidraScript {
 
                     } else {
                         printf("[NO] ");
-                        cptf++;
-                        String bookmarkString = "WARNING : " + entry.getKey() + " not coded the way we expected it to be";
-                        add_bookmark_comment(entry.getKey().getAddress(), bookmarkString);
+                        //String bookmarkString = "WARNING : " + entry.getKey() + " not coded the way we expected it to be";
+                        //add_bookmark_comment(entry.getKey().getAddress(), bookmarkString);
                     }
                     
-                }
-                
-            }
+                }        
 
-            printf("\n");              
+                printf("\n");
+                
+                
+            } else {
+                printf(" > " + entry.getKey() + " Error ?\n");
+            }
+            
         }
-        printf("\n\n" + cptv + " 'correctly' coded instructions ( " + cptv + " / " + (cptv+cptf) +" )\n");
+        printf("\n\n" + cptv + " 'correctly' coded instructions ( " + cptv + " / " + cptinstr +" )\n");
 
     }
 }

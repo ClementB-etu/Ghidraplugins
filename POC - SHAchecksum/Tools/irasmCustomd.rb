@@ -32,11 +32,10 @@ def main
 #--------------------------------------------
 # 	Routines for Each Instruction			#
 #--------------------------------------------
-
 	case
 		when asm.match(/^aaa/i)
 			#ASCII Adjust After Addition
-			//#printf("%-34s%-15s\n\n", '37', 'aaa')
+			#printf("%-34s%-15s\n\n", '37', 'aaa')
 		when asm.match(/^aad/i)
 			#ASCII Adjust AX Before Division
 			##printf("%-34s%-15s\n\n", 'D50A', 'aad')
@@ -1142,7 +1141,6 @@ def main
 		end
 	end
 	
-
 rescue TypeError
 	nasm(asm)
 	main
@@ -2643,6 +2641,7 @@ def opmodrm(instruction, m1, num)
 			m1 = m1.gsub(/^FE/i, 'FF')			#DEC/INC/PUSH
 			m1 = m1.gsub(/^F6/i, 'F7')			#DIV/IDIV/IMUL						
 		end
+		
 	elsif form == 'register' then
 		#Kick out instructions
 	

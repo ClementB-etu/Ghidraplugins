@@ -15,3 +15,5 @@ cd  80			        #calling the linux kernel to execute our print to stdout
             
 b8	01 00 00 00			#moving "sys_exit" call number to eax
 cd	80			        #executing it via linux sys_call
+
+#perl m2elf.pl --in hello1.m --out hello1.exe --mem 16
