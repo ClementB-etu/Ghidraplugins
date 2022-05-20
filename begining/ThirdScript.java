@@ -120,30 +120,6 @@ public class ThirdScript extends GhidraScript {
             }
         }
 
-        /* 
-        
-        
-        SINKS 
-
-        sinks = [					
-        "strcpy",
-        "memcpy",
-        "gets",
-        "memmove",
-        "scanf",
-        "strcpyA", 
-        "strcpyW", 
-        "wcscpy", 
-        "_tcscpy", 
-        "_mbscpy", 
-        "StrCpy", 
-        "StrCpyA",
-        "lstrcpyA",
-        "lstrcpy", 
-	    ]
-
-        */
-
     }
 
 }

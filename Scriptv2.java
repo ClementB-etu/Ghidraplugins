@@ -24,7 +24,7 @@ import ghidra.app.cmd.disassemble.DisassembleCommand;
 
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSet;
-import ghidra.program.model.mem.Memory;
+import ghidra.program.model.mem.*;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.model.mem.MemBuffer;
 import ghidra.program.model.mem.MemoryAccessException;
@@ -34,28 +34,18 @@ import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.Undefined4DataType;
 import ghidra.program.model.data.DataUtilities.ClearDataMode;
 
+import ghidra.program.database.mem.FileBytes;
+
 import ghidra.util.Msg;
 import java.lang.Math;
-import java.util.TreeMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;  
 import java.util.Map.Entry;
-
 import java.io.*;
-import java.util.Scanner;
 import java.nio.file.*;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 
 
 public class Scriptv2 extends GhidraScript {
-
-    protected void add_bookmark_comment(Address addr, String text) {
-
-        createBookmark(addr, "SearchForRedundancy", text);
-        currentProgram.getListing().getCodeUnitAt(addr).setComment(CodeUnit.EOL_COMMENT, text);
-
-    }
 
     @Override
     protected void run() throws Exception {
@@ -70,11 +60,21 @@ public class Scriptv2 extends GhidraScript {
 
         Listing listing = currentProgram.getListing();
         InstructionIterator listIt = listing.getInstructions(true);
+        Memory mem = currentProgram.getMemory();
+        
+        List<FileBytes> fbList = mem.getAllFileBytes();
 
+        for (FileBytes fb : fbList)
+        {
+            println("first byte : " + Integer.toHexString(fb.getOriginalByte​(0) & 0xFF));
+        }
+
+        
         /*
         * Map<String, Address> instrAddr : map associant Instruction et son adresse dans l'exécutable
         * Map<String, String[]> instrInfo : map associant Instruction et les différentes possibilités de son code machine
         */
+
 
         Map<Instruction, String> instrBytes = new HashMap<Instruction, String>();
         Map<String, String> instrInfo = new HashMap<String, String>();
@@ -144,7 +144,7 @@ public class Scriptv2 extends GhidraScript {
             
         }
 
-        Memory mem = currentProgram.getMemory();
+       // Memory mem = currentProgram.getMemory();
 
         for (Map.Entry<Instruction, String> entry : instrBytes.entrySet()) {
 
@@ -176,7 +176,7 @@ public class Scriptv2 extends GhidraScript {
                         res[i]  = str;
                     }                
 
-                    editBytes(res,addr);
+                    //editBytes(res,addr);
 
                 }
                 
@@ -282,6 +282,11 @@ public class Scriptv2 extends GhidraScript {
 			DisassembleCommand cmd = new DisassembleCommand(entry.getKey(), entry.getValue(), true);
 			cmd.applyTo(currentProgram, monitor);
 		}
+        
     }
 
+    protected void add_bookmark_comment(Address addr, String text) {
+        createBookmark(addr, "SearchForRedundancy", text);
+        currentProgram.getListing().getCodeUnitAt(addr).setComment(CodeUnit.EOL_COMMENT, text);
+    }
 }
