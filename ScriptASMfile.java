@@ -80,52 +80,74 @@ public class ScriptASMfile extends GhidraScript {
 
         MemoryBlock[] memblocksSections = mem.getBlocks();
 
-        //Read symtable before ! (name des var, size ... )
         
         SymbolTable symtab = currentProgram.getSymbolTable();
         SymbolIterator symit = symtab.getAllSymbols(false);
         
-        Map<String, Int> instrInfo = new HashMap<String, String>();
+        LinkedHashMap<String, Integer> dataAddr = new LinkedHashMap<String, Integer>();
+        Map<Address, String> dataInfo = new HashMap<Address, String>();
+
 
         while (symit.hasNext())
         {   
             Symbol sym = symit.next();
+            
             if ((!sym.getName().startsWith("_")) && (!sym.getName().startsWith("entry")))
             {
                 println(sym.getName() + " : " + sym.getAddress() + "\n");
-            }
+                if (symit.hasNext())
+                {   
+                    SymbolIterator symittmp = symtab.getAllSymbols(false);
+                    while (symittmp.hasNext())
+                    {
+                        if (symittmp.next()==sym)
+                        {
+                            Symbol next = symittmp.next();
+                            int size = (int)next.getAddress().subtract(sym.getAddress());
+                            dataAddr.put(sym.getName(),size);
+                            break;                      
+                        }
+                    }
+                }
+            }            
         }
 
         for (MemoryBlock secblock : memblocksSections) {
             if (secblock.getName().equals(".text"))
             {
                 pw.println(section  + secblock.getName());        
-                pw.println(secblock.getStart());
+                pw.println("_start :");   
+                while ((listIt.hasNext())) {
+                    Instruction instr = listIt.next();
+                    pw.println("\t\t" + instr);
+                }
+     
             } 
             else if ((secblock.getName().equals(".data"))) 
             {
-                pw.println(section  + secblock.getName() + " " +secblock.getSize());   
+                pw.println(section  + secblock.getName());   
                 byte[] b = new byte[(int)secblock.getSize()];
                 if (secblock.getBytes(secblock.getStart(),b) > -1)
                 {
-                    println("[ "+ secblock.getName() +" ] :bytes retreived\n");
+                    println("[ "+ secblock.getName() +" ] : bytes retreived\n");
                 }
+                
+                int start = 0;
+                int end = 0;
+                for (Map.Entry<String, Integer> entry : dataAddr.entrySet())
+                {   
+                    end = entry.getValue()-1;
+                    byte[] btmp = Arrays.copyOfRange(b,start,start+end);
+                    start = entry.getValue();
 
-                String string = new String(b);
-                println("str : " + string); // A séparer (avec les infos dans symtable)
+                    String string = new String(btmp);
+                    pw.println( entry.getKey() +" : db\t'" + string + "',10");
+                }              
 
-            } else if (secblock.getName().equals(".symtab")) 
-            {
-                pw.println(section  + secblock.getName() + " " +secblock.getSize());   
             }
         }
 
         pw.close();
-
-        while ((listIt.hasNext())) {
-            Instruction instr = listIt.next();
-            println("instr : " + instr);
-        }
 
     }
 }
