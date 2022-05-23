@@ -1,8 +1,5 @@
 global _start
-		section segment_0
 		section .text
-		section .data
-		section .shstrtab
-		section .strtab
-		section .symtab
-		section _elfSectionHeaders
+00401000
+		section .data 23
+		section .symtab 240

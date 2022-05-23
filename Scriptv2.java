@@ -151,11 +151,8 @@ public class Scriptv2 extends GhidraScript {
             if ((instrInfo.containsKey(entry.getKey().toString())) && !(entry.getKey().toString().startsWith("J")))
             {
                 String actualcod = entry.getValue().trim();
-                String usualcod = instrInfo.get(entry.getKey().toString()).trim();
-
-            
-                
-                
+                String usualcod = instrInfo.get(entry.getKey().toString()).trim();     
+                   
                 if (actualcod.equals(usualcod))
                 {
                     //printf(" [YES] \n");

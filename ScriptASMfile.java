@@ -36,6 +36,9 @@ import ghidra.program.model.listing.*;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.Undefined4DataType;
 import ghidra.program.model.data.DataUtilities.ClearDataMode;
+import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.SymbolTable;
+import ghidra.program.model.symbol.SymbolIterator;
 
 import ghidra.program.database.mem.FileBytes;
 
@@ -76,12 +79,53 @@ public class ScriptASMfile extends GhidraScript {
         String section = "\t\tsection ";
 
         MemoryBlock[] memblocksSections = mem.getBlocks();
-        for (MemoryBlock secblock : memblocksSections) {
-            pw.println(section  + secblock.getName());
 
+        //Read symtable before ! (name des var, size ... )
+        
+        SymbolTable symtab = currentProgram.getSymbolTable();
+        SymbolIterator symit = symtab.getAllSymbols(false);
+        
+        Map<String, Int> instrInfo = new HashMap<String, String>();
+
+        while (symit.hasNext())
+        {   
+            Symbol sym = symit.next();
+            if ((!sym.getName().startsWith("_")) && (!sym.getName().startsWith("entry")))
+            {
+                println(sym.getName() + " : " + sym.getAddress() + "\n");
+            }
+        }
+
+        for (MemoryBlock secblock : memblocksSections) {
+            if (secblock.getName().equals(".text"))
+            {
+                pw.println(section  + secblock.getName());        
+                pw.println(secblock.getStart());
+            } 
+            else if ((secblock.getName().equals(".data"))) 
+            {
+                pw.println(section  + secblock.getName() + " " +secblock.getSize());   
+                byte[] b = new byte[(int)secblock.getSize()];
+                if (secblock.getBytes(secblock.getStart(),b) > -1)
+                {
+                    println("[ "+ secblock.getName() +" ] :bytes retreived\n");
+                }
+
+                String string = new String(b);
+                println("str : " + string); // A séparer (avec les infos dans symtable)
+
+            } else if (secblock.getName().equals(".symtab")) 
+            {
+                pw.println(section  + secblock.getName() + " " +secblock.getSize());   
+            }
         }
 
         pw.close();
+
+        while ((listIt.hasNext())) {
+            Instruction instr = listIt.next();
+            println("instr : " + instr);
+        }
 
     }
 }
