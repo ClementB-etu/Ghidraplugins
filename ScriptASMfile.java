@@ -21,7 +21,6 @@
 import generic.continues.RethrowContinuesFactory;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.bin.MemoryByteProvider;
-import ghidra.app.util.bin.format.elf.ElfHeader;
 import ghidra.app.script.GhidraScript;
 import ghidra.app.cmd.disassemble.DisassembleCommand;
 
@@ -68,8 +67,6 @@ public class ScriptASMfile extends GhidraScript {
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
         ByteProvider byteProvider = new MemoryByteProvider(mem, currentProgram.getImageBase());
-
-        ElfHeader elfheader = ElfHeader.createElfHeader(RethrowContinuesFactory.INSTANCE,  byteProvider);
         
         File asm = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/generated.asm");
         FileWriter fw = new FileWriter(asm, false);
@@ -92,7 +89,7 @@ public class ScriptASMfile extends GhidraScript {
         {   
             Symbol sym = symit.next();
             
-            if ((!sym.getName().startsWith("_")) && (!sym.getName().startsWith("entry")))
+            if ((!sym.getName().contains("_")) && (!sym.getName().startsWith("entry")))
             {
                 println(sym.getName() + " : " + sym.getAddress() + "\n");
                 if (symit.hasNext())
@@ -119,7 +116,7 @@ public class ScriptASMfile extends GhidraScript {
                 pw.println("_start :");   
                 while ((listIt.hasNext())) {
                     Instruction instr = listIt.next();
-                    pw.println("\t\t" + instr);
+                    pw.println("\t\t" + instr.toString().replace("ptr",""));
                 }
      
             } 
@@ -136,6 +133,7 @@ public class ScriptASMfile extends GhidraScript {
                 int end = 0;
                 for (Map.Entry<String, Integer> entry : dataAddr.entrySet())
                 {   
+                    println(entry.getKey() + " start : " + start + " end : " + end);
                     end = entry.getValue()-1;
                     byte[] btmp = Arrays.copyOfRange(b,start,start+end);
                     start = entry.getValue();

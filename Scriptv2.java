@@ -61,13 +61,6 @@ public class Scriptv2 extends GhidraScript {
         Listing listing = currentProgram.getListing();
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
-        
-        List<FileBytes> fbList = mem.getAllFileBytes();
-
-        for (FileBytes fb : fbList)
-        {
-            println("first byte : " + Integer.toHexString(fb.getOriginalByte​(0) & 0xFF));
-        }
 
         
         /*
