@@ -188,6 +188,8 @@ public class Scriptv2 extends GhidraScript {
         return data;
     }
 
+    /* Lot of side effects - padding, lacking of space .... */ 
+    /* unusable */
     public void editBytes(String[] b, Address startAddr) throws Exception {
 
 		Address endAddr = null;

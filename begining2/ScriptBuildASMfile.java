@@ -150,7 +150,7 @@ public class ScriptASMfile extends GhidraScript {
         pw.close();
         */
         
-        File asmbis = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/generatedbis.asm");
+        File asmbis = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/generated.asm");
 
         Exporter exporter = new AsciiExporter();
         exporter.export(asmbis, currentProgram, null, monitor);
