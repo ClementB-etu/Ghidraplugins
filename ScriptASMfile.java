@@ -21,6 +21,9 @@
 import generic.continues.RethrowContinuesFactory;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.bin.MemoryByteProvider;
+import ghidra.app.util.exporter.Exporter;
+import ghidra.app.util.exporter.AsciiExporter;
+import ghidra.app.util.exporter.IntelHexExporter;
 import ghidra.app.script.GhidraScript;
 import ghidra.app.cmd.disassemble.DisassembleCommand;
 
@@ -67,7 +70,7 @@ public class ScriptASMfile extends GhidraScript {
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
         ByteProvider byteProvider = new MemoryByteProvider(mem, currentProgram.getImageBase());
-        
+        /*
         File asm = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/generated.asm");
         FileWriter fw = new FileWriter(asm, false);
         PrintWriter pw = new PrintWriter(fw);
@@ -83,7 +86,6 @@ public class ScriptASMfile extends GhidraScript {
         
         LinkedHashMap<String, Integer> dataAddr = new LinkedHashMap<String, Integer>();
         Map<Address, String> dataInfo = new HashMap<Address, String>();
-
 
         while (symit.hasNext())
         {   
@@ -146,6 +148,14 @@ public class ScriptASMfile extends GhidraScript {
         }
 
         pw.close();
+        */
+        
+        File asmbis = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/generatedbis.asm");
+
+        Exporter exporter = new AsciiExporter();
+        exporter.export(asmbis, currentProgram, null, monitor);
+        println("msg log : " + exporter.getMessageLog());
+        
 
     }
 }
