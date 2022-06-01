@@ -1,4 +1,4 @@
- /* ###
+/* ###
  * IP: GHIDRA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,51 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Ghidra ScriptASMfile - Creation of an asm file using the disassembly code provided by ghidra
+//Ghidra Script v1 - redundancy research
 //@category    Examples
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
 
-import generic.continues.RethrowContinuesFactory;
-import ghidra.app.util.bin.ByteProvider;
-import ghidra.app.util.bin.MemoryByteProvider;
-import ghidra.app.util.exporter.Exporter;
-import ghidra.app.util.exporter.AsciiExporter;
-import ghidra.app.util.exporter.IntelHexExporter;
+
 import ghidra.app.script.GhidraScript;
-import ghidra.app.cmd.disassemble.DisassembleCommand;
 
 import ghidra.program.model.address.Address;
-import ghidra.program.model.address.AddressSet;
-import ghidra.program.model.mem.*;
-import ghidra.program.model.mem.MemoryBlock;
+import ghidra.program.model.mem.Memory;
 import ghidra.program.model.mem.MemBuffer;
-import ghidra.program.model.mem.MemoryAccessException;
-import ghidra.program.model.util.CodeUnitInsertionException;
-import ghidra.program.model.listing.*;
-import ghidra.program.model.data.DataType;
-import ghidra.program.model.data.Undefined4DataType;
-import ghidra.program.model.data.DataUtilities.ClearDataMode;
-import ghidra.program.model.symbol.Symbol;
-import ghidra.program.model.symbol.SymbolTable;
-import ghidra.program.model.symbol.SymbolIterator;
+import ghidra.program.model.listing.Listing;
+import ghidra.program.model.listing.Instruction;
+import ghidra.program.model.listing.InstructionIterator;
+import ghidra.program.model.listing.Function;
+import ghidra.program.model.listing.FunctionManager;
+import ghidra.program.model.listing.FunctionIterator;
+import ghidra.program.model.listing.CodeUnit;
 
-import ghidra.program.database.mem.FileBytes;
 
 import ghidra.util.Msg;
 import java.lang.Math;
-import java.util.*;  
-import java.util.Map.Entry;
+import java.util.HashMap;
+import java.util.Map;
+
 import java.io.*;
+import java.util.Scanner;
 import java.nio.file.*;
-import java.nio.charset.Charset;
+import java.util.Arrays;
 
+/*
+ * TODO
+ * Traiter la dernière instruction ? (pas de next donc pas de taille)
+ * Traiter une seule fois les instructions (si déjà dans la map = déjà traité)
+ * Converir String en Instruction 
+ * Traitement de arrOfInfos
+ *
+*/
 
-public class ScriptBuildASMfile extends GhidraScript {
+public class Scriptv1 extends GhidraScript {
 
     @Override
     protected void run() throws Exception {
-        
+
         if (currentProgram == null) {
             Msg.showError(this,
                     null,
@@ -70,14 +69,6 @@ public class ScriptBuildASMfile extends GhidraScript {
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
         ByteProvider byteProvider = new MemoryByteProvider(mem, currentProgram.getImageBase());
-        /*
-        File asm = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/generated.asm");
-        FileWriter fw = new FileWriter(asm, false);
-        PrintWriter pw = new PrintWriter(fw);
-        pw.println("global _start");
-
-        String section = "\t\tsection ";
-
         MemoryBlock[] memblocksSections = mem.getBlocks();
 
         
@@ -146,16 +137,4 @@ public class ScriptBuildASMfile extends GhidraScript {
 
             }
         }
-
-        pw.close();
-        */
-        
-        File asmbis = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/generated.asm");
-
-        Exporter exporter = new AsciiExporter();
-        exporter.export(asmbis, currentProgram, null, monitor);
-        println("msg log : " + exporter.getMessageLog());
-        
-
-    }
 }

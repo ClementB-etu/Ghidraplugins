@@ -45,7 +45,7 @@ import java.nio.file.*;
 import java.nio.charset.Charset;
 
 
-public class Scriptv2 extends GhidraScript {
+public class ScriptSearchEditBytes extends GhidraScript {
 
     @Override
     protected void run() throws Exception {

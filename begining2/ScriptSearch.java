@@ -52,7 +52,7 @@ import java.util.Arrays;
  *
 */
 
-public class Scriptv1 extends GhidraScript {
+public class ScriptSearch extends GhidraScript {
 
     protected void add_bookmark_comment(Address addr, String text) {
 
