@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Ghidra Script v1 - redundancy research
+//Ghidra Script - Sanitizing & Inspecting sanitized data in .rodata
 //@category    Examples
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
@@ -33,8 +33,8 @@ import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.model.mem.MemBuffer;
 import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.program.model.listing.*;
-
 import ghidra.program.model.data.StringDataType;
+import ghidra.program.model.symbol.ReferenceIterator;
 
 import ghidra.program.util.DefinedDataIterator;
 import ghidra.app.util.XReferenceUtil;
@@ -48,14 +48,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.charset.Charset;
 
-/*
- * TODO
- * Traiter la dernière instruction ? (pas de next donc pas de taille)
- * Traiter une seule fois les instructions (si déjà dans la map = déjà traité)
- * Converir String en Instruction 
- * Traitement de arrOfInfos
- *
-*/
 
 public class ScriptInspectingRodata extends GhidraScript {
 
@@ -77,31 +69,7 @@ public class ScriptInspectingRodata extends GhidraScript {
         MemoryBlock[] memblocksSections = mem.getBlocks();
 
 
-        /*
-        while (symit.hasNext())
-        {   
-            Symbol sym = symit.next();
-            
-            if ((!sym.getName().contains("_")) && (!sym.getName().startsWith("entry")))
-            {
-                println(sym.getName() + " : " + sym.getAddress() + "\n");
-                if (symit.hasNext())
-                {   
-                    SymbolIterator symittmp = symtab.getAllSymbols(false);
-                    while (symittmp.hasNext())
-                    {
-                        if (symittmp.next()==sym)
-                        {
-                            Symbol next = symittmp.next();
-                            int size = (int)next.getAddress().subtract(sym.getAddress());
-                            dataAddr.put(sym.getName(),size);
-                            break;                      
-                        }
-                    }
-                }
-            }            
-        }
-        */
+
         for (MemoryBlock secblock : memblocksSections) {
             if (secblock.getName().equals(".rodata"))
             {
@@ -111,50 +79,59 @@ public class ScriptInspectingRodata extends GhidraScript {
                     println("[ "+ secblock.getName() +" ] : bytes retreived");
                 }
                 
-                /*File myObj = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/results.txt");
-                if (myObj.createNewFile()) {
-                    println("File created: " + myObj.getName());
-                }*/
-                FileWriter myWriter = new FileWriter("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/results.txt");
-     
-                int indtmp = 8;
-                
-                /*for (int i = 8;i<b.length;i++) {
-                    
-                    monitor.setProgress(i);
-                    byte[] btmp = getSliceOfArray(b,indtmp,i);
-                    //String strtmp = new String(btmp);
-                    String strtmp = "5bb2aad26ecb4f5aff83bfa8c8a1309267588fb9f5ee2041de61969ae20cc599af9fafdff6c47bd6bc82f67bb5c26dd3313438dd577018d22ba17f26552f33d791cfc714b5f9fa87b40902a166642bf686d6365f5dce3d7b9c06e6d9427a8b5496733bd084efeb48ff8ad8ad6201c407d6196a2d2d02ddbee52d6494eab6bf97bc0680d8365417fa2b31c381a7bfa34cdf0c67b85476273a0ce4326cdc876fc2113002f973e02ad0140c533e1cff42efd8e8e95ce9fdcece04f5ac8d67402bb0503a43c2ba1bdbf28fdc7bb3bcc68980f107a005977e5180bb0064768d9ae48a7abd9698f2661fd7019fbc70994c0be049eaf62704580b0415af9dec44dada562e412a0544bc2aa22aaa77b8552e7f188e91016861aa433c418318b9a6e8e92ca822911aa6470e5883cca322e11bbf60667ea441822b4a2ad0011d5be43059a1219ba646e887dd82688bedb122607aec69cc605c0ca396d42943b474fe20725ec05d9298bad8a46bf29e707f29171670ca9e3fa689c15d0ed777af0a2b265b44405d2916302b97908f818dcba35237f88c6c1bd59d2a42ecf765b5c816035ea122f8e77cd0c489c1d18625615d70e20b58dd412607d6bff9ae4615453c595b223c7bc7b0f26b3914fbf49d5d1eb2a6e205186f8d85a54dc0cf9232368a8aa4ca2997a3db3e505f45021088e76f9d8ec437251d86547ac1ba6bffe05a0c022f1ccf7a41625f211defbf123209b120d055622095a0d9b460847e62120e0956b7ad9d54f9253c58b9e29bcb0a3f0b3ca7c883428155d584a5131b0490456a210f6a129217ccbd62fdde";
-                    Address addrtmp = find(strtmp);
-                    if (addrtmp != null) {
-                        myWriter.write("str found " + strtmp + " !\n");
-                        println("str found " + strtmp + " !");
-                        break;
-                        //println("i : " + i  + " indtmp : " + indtmp);
-                    } else {
-                        myWriter.write("str : " + strtmp + " not found\n");
-                        println("str : " + strtmp + " not found");
-                        break;
-                    }
-                }*/
                 Address addr = secblock.getStart();
+
+                //Iterates through rodata to sanitize str (even with big strings that aren't analyzed by Ghidra's analyzer)
                 while (secblock.contains(addr))
                 {
                     Data dat = currentProgram.getListing().getDataAt(addr);
                     long lgth = dat.getLength();
+
                     if (lgth == 1)
                     {
                         try 
                         {
                             currentProgram.getListing().createData​(addr, StringDataType.dataType);
+                            //Datatype changed, so string has been created and dat (value, length ... )has changed
+
+                            dat = currentProgram.getListing().getDataAt(addr);
+                            lgth = dat.getLength();
+                            //If lgth doesn't change, it isn't a string so codeunit need to be clear in order not to crash during the next execution (if string exist at this addr, crash when creating string)
+                            if (lgth == 1) 
+                            {
+                                currentProgram.getListing().clearCodeUnits(addr, addr.add(1), true);
+                            }
+                            addr = addr.add(lgth);
+
                         } catch (Exception e) {
-                            println(e);
+                            println(e.getMessage());
                         }
-                    }
-                    println("[" + addr + "] data : " + dat.getValue() + " (length) "	+ lgth);
-                    addr = addr.add(lgth);
+
+                    } else {
+                        addr = addr.add(lgth);
+                    }  
                 }
-                
+
+                //At this point, all the potentially encoded strings are in 'Defined String' table, so we iterate through it
+                for (Data dat : DefinedDataIterator.definedStrings(currentProgram) ) {
+                    Address strAddr = dat.getMinAddress();
+                    if ((secblock.contains(strAddr)) && (dat.getLength()>5))
+                    {                        
+                        int nbref = 0;
+                        ReferenceIterator refit = dat.getReferenceIteratorTo();
+                        while(refit.hasNext())
+                        {
+                            nbref++;
+                            refit.next();
+                        }
+
+                        //println("dat : " + ((String) dat.getValue()) + "(number or letter ? : " + getNumberOrLetter(((String) dat.getValue())) + " )");
+                        //println("dat : " + ((String) dat.getValue()) + "(appropriate length ? : " + getAppropriateLength(((String) dat.getValue())) + " )");
+                        //println("dat : " + ((String) dat.getValue()) + "(entropy : " + getShannonEntropy(((String) dat.getValue())) + " )");
+                        println("dat : " + ((String) dat.getValue()) + "(nbr XREF : " + nbref + " )");
+                    }
+                }
+                                
                     
             } else {
                 //println("Section : " + secblock.getName());        
@@ -176,4 +153,65 @@ public class ScriptInspectingRodata extends GhidraScript {
         // return the slice
         return slice;
     }
+
+    public static double log2(double x) {
+		return (double) (Math.log(x) / Math.log(2));
+	}
+
+	public double getShannonEntropy(String s) {
+		if (s == null) {
+			return 0.0;
+		}
+		int n = 0;
+		Map<Character, Integer> occ = new HashMap<>();
+		for (int c_ = 0; c_ < s.length(); ++c_) {
+			char cx = s.charAt(c_);
+			if (occ.containsKey(cx)) {
+				occ.put(cx, occ.get(cx) + 1);
+			} else {
+				occ.put(cx, 1);
+			}
+			++n;
+		}
+		double e = 0.0;
+		for (Map.Entry<Character, Integer> entry : occ.entrySet()) {
+			char cx = entry.getKey();
+			double p = (double) entry.getValue() / n;
+			e += p * log2(p);
+		}
+		return -e;
+	}
+
+    //Return 1 if s contient seulement [0-9] et [aA-zZ], 0 sinon
+    public int getNumberOrLetter(String s) {
+		if (s == null) {
+			return 0;
+		}
+		for (int c_ = 0; c_ < s.length(); ++c_) {
+			char cx = s.charAt(c_);
+            int ascii = (int) cx;
+
+            if (!(ascii>47 && ascii<58) && !(ascii>64 && ascii<91) && !(ascii>96 && ascii<123))
+            {
+                return 0;
+            }
+		}
+	
+		return 1;
+	}
+
+    //Return 1 if s est d'une longueur multiple de 4 (car chaque caractère encode utilise 2bytes(4 caractères))
+    public int getAppropriateLength(String s) {
+		if (s == null) {
+			return 0;
+		}
+
+		if ((s.length()%4) == 0)
+        {
+		    return 1;
+        } else {
+            return 0;
+        }
+	
+	}
 }
