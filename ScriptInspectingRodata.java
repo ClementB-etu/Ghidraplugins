@@ -35,6 +35,8 @@ import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.program.model.listing.*;
 import ghidra.program.model.data.StringDataType;
 import ghidra.program.model.symbol.ReferenceIterator;
+import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.pcode.PcodeOp;
 
 import ghidra.program.util.DefinedDataIterator;
 import ghidra.app.util.XReferenceUtil;
@@ -50,6 +52,11 @@ import java.nio.charset.Charset;
 
 
 public class ScriptInspectingRodata extends GhidraScript {
+
+    int symbolW = 10;
+    int lengthW = 8;
+    int entropyW = 4;
+    int nbrXREFW = 2;
 
     @Override
     protected void run() throws Exception {
@@ -112,6 +119,12 @@ public class ScriptInspectingRodata extends GhidraScript {
                     }  
                 }
 
+                double meanScore = 0;
+                Map<String, Data> data = new HashMap<String, Data>();
+                Map<String, Double> scores = new HashMap<String, Double>();
+                Map<String, Boolean> suspiciousstr = new HashMap<String, Boolean>();
+                Map<Address, Integer> flowcount = new HashMap<Address, Integer>();
+
                 //At this point, all the potentially encoded strings are in 'Defined String' table, so we iterate through it
                 for (Data dat : DefinedDataIterator.definedStrings(currentProgram) ) {
                     Address strAddr = dat.getMinAddress();
@@ -128,16 +141,102 @@ public class ScriptInspectingRodata extends GhidraScript {
                         //println("dat : " + ((String) dat.getValue()) + "(number or letter ? : " + getNumberOrLetter(((String) dat.getValue())) + " )");
                         //println("dat : " + ((String) dat.getValue()) + "(appropriate length ? : " + getAppropriateLength(((String) dat.getValue())) + " )");
                         //println("dat : " + ((String) dat.getValue()) + "(entropy : " + getShannonEntropy(((String) dat.getValue())) + " )");
-                        println("dat : " + ((String) dat.getValue()) + "(nbr XREF : " + nbref + " )");
+                        //println("dat : " + ((String) dat.getValue()) + "(nbr XREF : " + nbref + " )");
+
+                        double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
+                        double scorelenght = getAppropriateLength((String) dat.getValue()) * this.lengthW;
+                        double scoreentropy = getShannonEntropy((String) dat.getValue()) * this.entropyW;
+                        double scorexref = nbref * this.nbrXREFW;
+                        double score = (scoresymbols + scorelenght + scoreentropy + scorexref);
+                        meanScore += score;
+
+                        data.put((String) dat.getValue(), dat);
+                        scores.put((String) dat.getValue(),score);
+                        //println("dat : " + ((String) dat.getValue()) + "(SCORE : " + score + " )");
+                        
                     }
                 }
+                
+                meanScore /= scores.size();
+                println("mean score is : " + (meanScore));
+
+                double etypeScore = 0;
+                for (Map.Entry<String, Double> entry : scores.entrySet()) {
+                    etypeScore += Math.pow((entry.getValue()-meanScore),2);
+                }
+
+                etypeScore = Math.sqrt(etypeScore / scores.size());
+                println("standard deviation score is : " + etypeScore);
                                 
-                    
+                for (Map.Entry<String, Double> entry : scores.entrySet()) {
+                    if (entry.getValue() > (meanScore + etypeScore))
+                    {
+                        println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
+                        suspiciousstr.put(entry.getKey(),true);
+                    } else {
+                        suspiciousstr.put(entry.getKey(),false);
+                    }
+                }
+
+                for (Map.Entry<String, Boolean> entry : suspiciousstr.entrySet()) {
+                    if (entry.getValue()) // if suspicious
+                    {
+                        ReferenceIterator refit = data.get(entry.getKey()).getReferenceIteratorTo();
+                        while(refit.hasNext())
+                        {   
+                            Address addrtmp = refit.next().getFromAddress();
+                            Instruction i = getInstructionAt(addrtmp);
+                            try
+                            {
+                                if (i.getMnemonicString().equals("PUSH"))
+                                {
+                                    Instruction nextinstr = i.getNext();
+                                
+                                    if (nextinstr.getMnemonicString().equals("CALL"))
+                                    {
+                                        //Retrieve address used by the CALL instruction
+                                        Address[] flows = nextinstr.getFlows();
+
+                                        for (int j = 0; j<flows.length;j++)
+                                        {
+                                            if (flowcount.containsKey(flows[j]))
+                                            {
+                                                flowcount.put(flows[j],flowcount.get(flows[j]) + 1);
+                                            } else {
+                                                flowcount.put(flows[j],1);
+                                            }
+                                        }
+                                        
+                                    }
+                                }   
+                            } catch (Exception e) { }
+                        }
+                    }
+                } 
+                
+                int max = Collections.max(flowcount.values());
+                
+                for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) {
+                    if (entry.getValue() == max)
+                    {
+                        println("[SUSPICIOUS] address : " + entry.getKey());
+                        analyseAddress(entry.getKey());
+                    }
+                }
+
+
             } else {
                 //println("Section : " + secblock.getName());        
             }
         }
     }
+
+    public int analyseAddress(Address addr)
+    {
+        println("~ potential decoding function at " + addr + " ~");
+        return 0;
+    }
+
 
     public static byte[] getSliceOfArray(byte[] arr, int start, int end)
     {
