@@ -234,6 +234,7 @@ public class ScriptInspectingRodata extends GhidraScript {
     public int analyseAddress(Address addr)
     {
         println("~ potential decoding function at " + addr + " ~");
+        
         return 0;
     }
 
