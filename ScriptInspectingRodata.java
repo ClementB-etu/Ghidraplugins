@@ -175,9 +175,11 @@ public class ScriptInspectingRodata extends GhidraScript {
 
                     if (entry.getValue() > (meanScore + etypeScore/2))
                     {
-                        println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
+                        //println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
                         suspiciousstr.put(entry.getKey(),true);
                     } else {
+                        //println("dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
+
                         suspiciousstr.put(entry.getKey(),false);
                     }
                 }
@@ -225,7 +227,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                     for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) {
                         if (entry.getValue() == max)
                         {
-                            println("[SUSPICIOUS] address : " + entry.getKey() + " used by " + entry.getValue() + " suspicious string");
+                            //println("[SUSPICIOUS] address : " + entry.getKey() + " used by " + entry.getValue() + " suspicious string");
                             analyseAddress(entry.getKey());
                         }
                     }
@@ -242,15 +244,30 @@ public class ScriptInspectingRodata extends GhidraScript {
     {
         Function fct = getFunctionAt(addr);
 
-        println("~ potential decoding function at " + addr + " ~");
         println("~ " + fct.getName()  + "  ~");
+        Set<Function> fctcalled = fct.getCalledFunctions(monitor);
+        Function fctsubstr = null;
+
+        for (Function f : fctcalled)
+        {
+            if (!(f.getName().startsWith("FUN")) && !(f.getName().startsWith("_"))) {
+                println("~ " + f.getName() + " ~");
+                fctsubstr = f;
+                break;
+            }
+        }
         
 
         DecompInterface ifc = new DecompInterface();
         ifc.openProgram(currentProgram);
-        DecompileResults res = ifc.decompileFunction(fct,0,monitor);
-        ClangTokenGroup tokgroup = res.getCCodeMarkup();
-        String ccode = tokgroup.toString();
+
+        DecompileResults ressubstr = ifc.decompileFunction(fctsubstr,0,monitor);
+        ClangTokenGroup tokgroupsubstr = ressubstr.getCCodeMarkup();
+        String ccodesubstr = tokgroupsubstr.toString();
+
+        DecompileResults resdecode = ifc.decompileFunction(fct,0,monitor);
+        ClangTokenGroup tokgroupdecode = resdecode.getCCodeMarkup();       
+        String ccode = tokgroupdecode.toString();
         String convasmvol = "local_10 = asmvol(uVar3);";
 
         String asmvol = "\nint asmvol (uint inputval){" +
@@ -264,22 +281,25 @@ public class ScriptInspectingRodata extends GhidraScript {
                         "\t:\"%eax\" /* Overwritten registers ('Clobber list') */);return outvalue;}\n";                
                 
         String main =   "int main(int argc, char *argv[]){\n"+
-                        " char* charInputsMap = \"82c49bfe9a08aca6358e127ac7b95f2b03584fc22b3c01867a3820a88f9be6fb1e6a5580bb9dbe447796161a2385df2b3e6ea566ff90ecbcc7d2ed4290591cdfa9fced907d09a447ebdecbd49ba0df62120e439e48c2163fe86d39a02b626ceac484b4f4e40097af8093bc3ea6f28741e0f04ca8ee4679616beb82fe7c000d68d00c946c6342b1ab8a2f3520ebdcf1b907691fe66c44201e502a0bae729d1ede8fe9ad4cda51a01e77a41915b95d6a082c6e\";\n"+
-                        " printf(\"Input: %s\", charInputsMap);\n" +
-                        " printf(\"Output: %s\"," + fct.getName() + "(charInputsMap));}\n";
+                        " if (argc != 2) {fprintf(stderr, \"Usage: %s <String to Decode>\\n\", argv[0]);exit(EXIT_FAILURE);}"+
+                        " printf(\"Input: %s\\n\", argv[1]);\n" +
+                        " printf(\"Output: %s\\n\"," + fct.getName() + "(argv[1]));}\n";
 
-        ccode = "#include <stdlib.h>\n#include <stdio.h>\n#include <string.h>\n#include <sys/stat.h>\n" + ccode;
+        ccode = "#include <stdlib.h>\n#include <stdio.h>\n#include <string.h>\n#include <sys/stat.h>\n" + ccodesubstr + ccode;
         ccode = ccode.replace("if (local_10 != *(int *)(in_GS_OFFSET + 0x14)) {iVar2 = __stack_chk_fail_local();}","");//A CHANGER
         ccode = ccode.replace("FUN_000111c0","strlen");
         ccode = ccode.replace("FUN_00011260","calloc");
         ccode = ccode.replace("FUN_00011220","strtol");
         ccode = ccode.replace("byte","unsigned char");
         ccode = ccode.replace("undefined4","char *");
-        ccode = ccode.replace("undefined","char"); // A FAIRE APRES L'AJOUT DE substring
+
         String delim = "(local_14,param_1,local_3c,4);";
         int index = ccode.indexOf(delim);
         ccode = ccode.substring(0, index + delim.length()) + convasmvol + ccode.substring(index + delim.length());
+
         ccode += asmvol + main;
+        ccode = ccode.replace("undefined","char"); 
+
 
         try
         {
