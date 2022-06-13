@@ -157,7 +157,8 @@ public class ScriptInspectingRodata extends GhidraScript {
                         //println("dat : " + ((String) dat.getValue()) + "(nbr XREF : " + nbref + " )");
 
                         /*
-                        * Here, we calculate indicators for all strings, and associate a score to each depending on the weights we discussed at the begining
+                        *   Here, we calculate indicators for all strings, and associate a score to each depending on the weights we discussed at the begining
+                        *   Then, we store the results
                         */
 
                         double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
@@ -169,7 +170,6 @@ public class ScriptInspectingRodata extends GhidraScript {
 
                         data.put((String) dat.getValue(), dat);
                         scores.put((String) dat.getValue(),score);
-                        //println("dat : " + ((String) dat.getValue()) + "(SCORE : " + score + " )");
                         
                     }
                 }
@@ -177,6 +177,9 @@ public class ScriptInspectingRodata extends GhidraScript {
                 meanScore /= scores.size();
                 println("mean score is : " + (meanScore));
 
+                /*
+                *  Now, we calculate the mean and the standard deviation
+                */
                 double etypeScore = 0;
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
                     etypeScore += Math.pow((entry.getValue()-meanScore),2);
