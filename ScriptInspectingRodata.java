@@ -23,6 +23,9 @@ import ghidra.app.script.GhidraScript;
 import generic.continues.RethrowContinuesFactory;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.bin.MemoryByteProvider;
+import ghidra.app.decompiler.DecompInterface;
+import ghidra.app.decompiler.DecompileResults;
+import ghidra.app.decompiler.ClangTokenGroup;
 
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSpace;
@@ -83,7 +86,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                 byte[] b = new byte[(int)secblock.getSize()];
                 if (secblock.getBytes(secblock.getStart(),b) > -1)
                 {
-                    println("[ "+ secblock.getName() +" ] : bytes retreived");
+                    println("["+ secblock.getName() +"] : bytes retreived");
                 }
                 
                 Address addr = secblock.getStart();
@@ -158,7 +161,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                 }
                 
                 meanScore /= scores.size();
-                println("mean score is : " + (meanScore));
+                //println("mean score is : " + (meanScore));
 
                 double etypeScore = 0;
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
@@ -166,10 +169,11 @@ public class ScriptInspectingRodata extends GhidraScript {
                 }
 
                 etypeScore = Math.sqrt(etypeScore / scores.size());
-                println("standard deviation score is : " + etypeScore);
+                //println("standard deviation score is : " + etypeScore);
                                 
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
-                    if (entry.getValue() > (meanScore + etypeScore))
+
+                    if (entry.getValue() > (meanScore + etypeScore/2))
                     {
                         println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
                         suspiciousstr.put(entry.getKey(),true);
@@ -214,15 +218,18 @@ public class ScriptInspectingRodata extends GhidraScript {
                     }
                 } 
                 
-                int max = Collections.max(flowcount.values());
+                try
+                {
+                    int max = Collections.max(flowcount.values());
                 
-                for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) {
-                    if (entry.getValue() == max)
-                    {
-                        println("[SUSPICIOUS] address : " + entry.getKey());
-                        analyseAddress(entry.getKey());
+                    for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) {
+                        if (entry.getValue() == max)
+                        {
+                            println("[SUSPICIOUS] address : " + entry.getKey() + " used by " + entry.getValue() + " suspicious string");
+                            analyseAddress(entry.getKey());
+                        }
                     }
-                }
+                } catch (Exception e) { }
 
 
             } else {
@@ -233,8 +240,58 @@ public class ScriptInspectingRodata extends GhidraScript {
 
     public int analyseAddress(Address addr)
     {
+        Function fct = getFunctionAt(addr);
+
         println("~ potential decoding function at " + addr + " ~");
+        println("~ " + fct.getName()  + "  ~");
         
+
+        DecompInterface ifc = new DecompInterface();
+        ifc.openProgram(currentProgram);
+        DecompileResults res = ifc.decompileFunction(fct,0,monitor);
+        ClangTokenGroup tokgroup = res.getCCodeMarkup();
+        String ccode = tokgroup.toString();
+        String convasmvol = "local_10 = asmvol(uVar3);";
+
+        String asmvol = "\nint asmvol (uint inputval){" +
+                        "int outvalue;\n"+
+                        "__asm__ volatile (\n"+
+                        "\t\" mov %1,%%eax\\n\"\n"+
+                        "\t\" aad\\n\"\n" +
+                        "\t\"  mov %%eax,%0\\n\"\n" +
+                        "\t:\"=r\" (outvalue) /* %0: Output variable list */\n" +
+                        "\t:\"r\" (inputval) /* %1: Input variable list */\n" +
+                        "\t:\"%eax\" /* Overwritten registers ('Clobber list') */);return outvalue;}\n";                
+                
+        String main =   "int main(int argc, char *argv[]){\n"+
+                        " char* charInputsMap = \"82c49bfe9a08aca6358e127ac7b95f2b03584fc22b3c01867a3820a88f9be6fb1e6a5580bb9dbe447796161a2385df2b3e6ea566ff90ecbcc7d2ed4290591cdfa9fced907d09a447ebdecbd49ba0df62120e439e48c2163fe86d39a02b626ceac484b4f4e40097af8093bc3ea6f28741e0f04ca8ee4679616beb82fe7c000d68d00c946c6342b1ab8a2f3520ebdcf1b907691fe66c44201e502a0bae729d1ede8fe9ad4cda51a01e77a41915b95d6a082c6e\";\n"+
+                        " printf(\"Input: %s\", charInputsMap);\n" +
+                        " printf(\"Output: %s\"," + fct.getName() + "(charInputsMap));}\n";
+
+        ccode = "#include <stdlib.h>\n#include <stdio.h>\n#include <string.h>\n#include <sys/stat.h>\n" + ccode;
+        ccode = ccode.replace("if (local_10 != *(int *)(in_GS_OFFSET + 0x14)) {iVar2 = __stack_chk_fail_local();}","");//A CHANGER
+        ccode = ccode.replace("FUN_000111c0","strlen");
+        ccode = ccode.replace("FUN_00011260","calloc");
+        ccode = ccode.replace("FUN_00011220","strtol");
+        ccode = ccode.replace("byte","unsigned char");
+        ccode = ccode.replace("undefined4","char *");
+        ccode = ccode.replace("undefined","char"); // A FAIRE APRES L'AJOUT DE substring
+        String delim = "(local_14,param_1,local_3c,4);";
+        int index = ccode.indexOf(delim);
+        ccode = ccode.substring(0, index + delim.length()) + convasmvol + ccode.substring(index + delim.length());
+        ccode += asmvol + main;
+
+        try
+        {
+            File code = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/decode.c");
+            FileWriter fw = new FileWriter(code, false);
+            PrintWriter pw = new PrintWriter(fw);
+            pw.println(ccode);
+            pw.close();
+        } catch (Exception e) { 
+            println("[ERROR] " + e.getMessage());
+        }
+       
         return 0;
     }
 
