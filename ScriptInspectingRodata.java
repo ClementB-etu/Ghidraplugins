@@ -19,47 +19,50 @@
 //@toolbar    world.png
 
 import ghidra.app.script.GhidraScript;
-
-import generic.continues.RethrowContinuesFactory;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.bin.MemoryByteProvider;
+import ghidra.app.util.XReferenceUtil;
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
 import ghidra.app.decompiler.ClangTokenGroup;
 
+import ghidra.util.Msg;
+
 import ghidra.program.model.address.Address;
-import ghidra.program.model.address.AddressSpace;
-import ghidra.program.model.address.AddressSet;
-import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.mem.*;
-import ghidra.program.model.mem.MemoryBlock;
-import ghidra.program.model.mem.MemBuffer;
-import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.program.model.listing.*;
 import ghidra.program.model.data.StringDataType;
 import ghidra.program.model.symbol.ReferenceIterator;
-import ghidra.program.model.symbol.Symbol;
-import ghidra.program.model.pcode.PcodeOp;
-
 import ghidra.program.util.DefinedDataIterator;
-import ghidra.app.util.XReferenceUtil;
 
-
-import ghidra.util.Msg;
 import java.lang.Math;
-import java.util.*;  
+import java.util.*;
+import java.util.stream.*;  
 import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
-import java.nio.charset.Charset;
 
 
 public class ScriptInspectingRodata extends GhidraScript {
 
+    /*
+    *   Weigths used regarding the relevance of each indicator
+    *
+    *   symbolW : weight used when a string only contains [aA-zZ][0-9]
+    *   lengthW : weight used when a string has a string which is a multiple from 4
+    *   entropyW : weight used with the string's entropy
+    *   nbrXREFW : weight used with the number of the XREF that the string has
+    *
+    */
     int symbolW = 10;
     int lengthW = 8;
     int entropyW = 4;
     int nbrXREFW = 2;
+
+    /*
+    * Name of the file created to be compiled and used to decode suspicious strings
+    */
+    String decodefilename = "decode.c";
 
     @Override
     protected void run() throws Exception {
@@ -72,6 +75,10 @@ public class ScriptInspectingRodata extends GhidraScript {
             return;
         }
 
+        /*
+        *   First, all the "blocks" (sections) bytes are retrieved
+        *   We only focus on the ".rodata" section, because that's where strings used in the executable are stored
+        */
         Listing listing = currentProgram.getListing();
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
@@ -91,12 +98,15 @@ public class ScriptInspectingRodata extends GhidraScript {
                 
                 Address addr = secblock.getStart();
 
-                //Iterates through rodata to sanitize str (even with big strings that aren't analyzed by Ghidra's analyzer)
+                //Iterates through .rodata to sanitize str (even with big strings that aren't analyzed by Ghidra's analyzer)
                 while (secblock.contains(addr))
                 {
                     Data dat = currentProgram.getListing().getDataAt(addr);
                     long lgth = dat.getLength();
 
+                    /*
+                    * Initially, "unsanitize" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
+                    */
                     if (lgth == 1)
                     {
                         try 
@@ -106,7 +116,7 @@ public class ScriptInspectingRodata extends GhidraScript {
 
                             dat = currentProgram.getListing().getDataAt(addr);
                             lgth = dat.getLength();
-                            //If lgth doesn't change, it isn't a string so codeunit need to be clear in order not to crash during the next execution (if string exist at this addr, crash when creating string)
+                            //If lgth doesn't change, it isn't a string so codeunit needs to be clear in order not to crash during the next execution (if string exist at this addr, it crashes when creating string)
                             if (lgth == 1) 
                             {
                                 currentProgram.getListing().clearCodeUnits(addr, addr.add(1), true);
@@ -146,6 +156,10 @@ public class ScriptInspectingRodata extends GhidraScript {
                         //println("dat : " + ((String) dat.getValue()) + "(entropy : " + getShannonEntropy(((String) dat.getValue())) + " )");
                         //println("dat : " + ((String) dat.getValue()) + "(nbr XREF : " + nbref + " )");
 
+                        /*
+                        * Here, we calculate indicators for all strings, and associate a score to each depending on the weights we discussed at the begining
+                        */
+
                         double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
                         double scorelenght = getAppropriateLength((String) dat.getValue()) * this.lengthW;
                         double scoreentropy = getShannonEntropy((String) dat.getValue()) * this.entropyW;
@@ -161,7 +175,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                 }
                 
                 meanScore /= scores.size();
-                //println("mean score is : " + (meanScore));
+                println("mean score is : " + (meanScore));
 
                 double etypeScore = 0;
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
@@ -169,16 +183,17 @@ public class ScriptInspectingRodata extends GhidraScript {
                 }
 
                 etypeScore = Math.sqrt(etypeScore / scores.size());
-                //println("standard deviation score is : " + etypeScore);
+                println("standard deviation score is : " + etypeScore);
                                 
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
-
+                    
+                    //This condition needs improvment (a lot of non-detected suspicious string)
                     if (entry.getValue() > (meanScore + etypeScore/2))
                     {
-                        //println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
+                        println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
                         suspiciousstr.put(entry.getKey(),true);
                     } else {
-                        //println("dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
+                        println("dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
 
                         suspiciousstr.put(entry.getKey(),false);
                     }
@@ -224,7 +239,8 @@ public class ScriptInspectingRodata extends GhidraScript {
                 {
                     int max = Collections.max(flowcount.values());
                 
-                    for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) {
+                    for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) 
+                    {
                         if (entry.getValue() == max)
                         {
                             //println("[SUSPICIOUS] address : " + entry.getKey() + " used by " + entry.getValue() + " suspicious string");
@@ -232,10 +248,27 @@ public class ScriptInspectingRodata extends GhidraScript {
                         }
                     }
                 } catch (Exception e) { }
+                 
+                ProcessBuilder pb = new ProcessBuilder("gcc", "-m32",decodefilename);
+                pb.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
+                Process procgcc = pb.start();
+                procgcc.waitFor();
 
 
-            } else {
-                //println("Section : " + secblock.getName());        
+                for (Map.Entry<String, Boolean> entry : suspiciousstr.entrySet()) {
+                    if (entry.getValue())
+                    {
+                        ProcessBuilder pbdecode = new ProcessBuilder("./a.out", entry.getKey());
+                        pbdecode.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
+                        Process procdecode = pbdecode.start();
+
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(procdecode.getInputStream()));
+                        Stream<String> line = reader.lines();
+                        println("line : " + line.collect(Collectors.toList()));
+                        procdecode.waitFor();
+                    }
+                    
+                }
             }
         }
     }
@@ -286,10 +319,13 @@ public class ScriptInspectingRodata extends GhidraScript {
                         " printf(\"Output: %s\\n\"," + fct.getName() + "(argv[1]));}\n";
 
         ccode = "#include <stdlib.h>\n#include <stdio.h>\n#include <string.h>\n#include <sys/stat.h>\n" + ccodesubstr + ccode;
-        ccode = ccode.replace("if (local_10 != *(int *)(in_GS_OFFSET + 0x14)) {iVar2 = __stack_chk_fail_local();}","");//A CHANGER
-        ccode = ccode.replace("FUN_000111c0","strlen");
-        ccode = ccode.replace("FUN_00011260","calloc");
-        ccode = ccode.replace("FUN_00011220","strtol");
+
+        /* A CHANGER */
+        ccode = ccode.replace("if (local_10 != *(int *)(in_GS_OFFSET + 0x14)) {iVar2 = __stack_chk_fail_local();}","");
+        ccode = ccode.replace("FUN_000111d0","strlen");
+        ccode = ccode.replace("FUN_00011280","calloc");
+        ccode = ccode.replace("FUN_00011240","strtol");
+
         ccode = ccode.replace("byte","unsigned char");
         ccode = ccode.replace("undefined4","char *");
 
@@ -303,7 +339,8 @@ public class ScriptInspectingRodata extends GhidraScript {
 
         try
         {
-            File code = new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/decode.c");
+            String path = "/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/" + decodefilename;
+            File code = new File(path);
             FileWriter fw = new FileWriter(code, false);
             PrintWriter pw = new PrintWriter(fw);
             pw.println(ccode);
