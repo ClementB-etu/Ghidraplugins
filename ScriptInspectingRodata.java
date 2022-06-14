@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Ghidra Script - Sanitizing & Inspecting sanitized data in .rodata
+//Ghidra Script - Sanitizing, Inspecting & deobfuscating sanitized data in .rodata
 //@category    Examples
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
@@ -31,7 +31,7 @@ import ghidra.util.Msg;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.mem.*;
 import ghidra.program.model.listing.*;
-import ghidra.program.model.data.StringDataType;
+import ghidra.program.model.data.*;
 import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.util.DefinedDataIterator;
 
@@ -54,15 +54,18 @@ public class ScriptInspectingRodata extends GhidraScript {
     *   nbrXREFW : weight used with the number of the XREF that the string has
     *
     */
+
+    int entropyW = 12;
     int symbolW = 10;
-    int lengthW = 8;
-    int entropyW = 4;
-    int nbrXREFW = 2;
+    int nbrXREFW = 4;
+    int lengthW = 2;
+    
 
     /*
     * Name of the file created to be compiled and used to decode suspicious strings
     */
     String decodefilename = "decode.c";
+    String resfilename = "res.txt";
 
     @Override
     protected void run() throws Exception {
@@ -135,7 +138,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                 double meanScore = 0;
                 Map<String, Data> data = new HashMap<String, Data>();
                 Map<String, Double> scores = new HashMap<String, Double>();
-                Map<String, Boolean> suspiciousstr = new HashMap<String, Boolean>();
+                Set<String> suspiciousstr = new HashSet<String>();
                 Map<Address, Integer> flowcount = new HashMap<Address, Integer>();
 
                 //At this point, all the potentially encoded strings are in 'Defined String' table, so we iterate through it
@@ -161,117 +164,133 @@ public class ScriptInspectingRodata extends GhidraScript {
                         *   Then, we store the results
                         */
 
-                        double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
+                        /*double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
                         double scorelenght = getAppropriateLength((String) dat.getValue()) * this.lengthW;
                         double scoreentropy = getShannonEntropy((String) dat.getValue()) * this.entropyW;
                         double scorexref = nbref * this.nbrXREFW;
                         double score = (scoresymbols + scorelenght + scoreentropy + scorexref);
-                        meanScore += score;
+                        meanScore += score;*/
+
+                        meanScore += getShannonEntropy((String) dat.getValue());
+
+                        /*data.put((String) dat.getValue(), dat);
+                        scores.put((String) dat.getValue(),score);*/
 
                         data.put((String) dat.getValue(), dat);
-                        scores.put((String) dat.getValue(),score);
+                        scores.put((String) dat.getValue(),getShannonEntropy((String) dat.getValue()));
                         
                     }
                 }
                 
                 meanScore /= scores.size();
-                println("mean score is : " + (meanScore));
+                println("mean entropy is : " + (meanScore));
 
                 /*
                 *  Now, we calculate the mean and the standard deviation
                 */
                 double etypeScore = 0;
+                double treshold = 0;
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
                     etypeScore += Math.pow((entry.getValue()-meanScore),2);
                 }
 
                 etypeScore = Math.sqrt(etypeScore / scores.size());
-                println("standard deviation score is : " + etypeScore);
-                                
+                println("standard deviation entropy is : " + etypeScore);
+
+                treshold = meanScore + (etypeScore/Math.sqrt(scores.size())) ; // Borne supérieur de l'intervalle de confiance à 68%
+                println("treshold entropy is : " + treshold);
+
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
                     
                     //This condition needs improvment (a lot of non-detected suspicious string)
-                    if (entry.getValue() > (meanScore + etypeScore/2))
+                    if (entry.getValue() > treshold)
                     {
                         println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
-                        suspiciousstr.put(entry.getKey(),true);
+                        suspiciousstr.add(entry.getKey());
                     } else {
                         println("dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
-
-                        suspiciousstr.put(entry.getKey(),false);
                     }
                 }
 
-                for (Map.Entry<String, Boolean> entry : suspiciousstr.entrySet()) {
-                    if (entry.getValue()) // if suspicious
-                    {
-                        ReferenceIterator refit = data.get(entry.getKey()).getReferenceIteratorTo();
-                        while(refit.hasNext())
-                        {   
-                            Address addrtmp = refit.next().getFromAddress();
-                            Instruction i = getInstructionAt(addrtmp);
-                            try
+                for (String s : suspiciousstr) {
+                    
+                    ReferenceIterator refit = data.get(s).getReferenceIteratorTo();
+                    while(refit.hasNext())
+                    {   
+                        Address addrtmp = refit.next().getFromAddress();
+                        Instruction i = getInstructionAt(addrtmp);
+                        try
+                        {
+                            if (i.getMnemonicString().equals("PUSH"))
                             {
-                                if (i.getMnemonicString().equals("PUSH"))
+                                Instruction nextinstr = i.getNext();
+                            
+                                if (nextinstr.getMnemonicString().equals("CALL"))
                                 {
-                                    Instruction nextinstr = i.getNext();
-                                
-                                    if (nextinstr.getMnemonicString().equals("CALL"))
+                                    //Retrieve address used by the CALL instruction
+                                    Address[] flows = nextinstr.getFlows();
+                                    for (int j = 0; j<flows.length;j++)
                                     {
-                                        //Retrieve address used by the CALL instruction
-                                        Address[] flows = nextinstr.getFlows();
-
-                                        for (int j = 0; j<flows.length;j++)
+                                        if (flowcount.containsKey(flows[j]))
                                         {
-                                            if (flowcount.containsKey(flows[j]))
-                                            {
-                                                flowcount.put(flows[j],flowcount.get(flows[j]) + 1);
-                                            } else {
-                                                flowcount.put(flows[j],1);
-                                            }
+                                            flowcount.put(flows[j],flowcount.get(flows[j]) + 1);
+                                        } else {
+                                            flowcount.put(flows[j],1);
                                         }
-                                        
                                     }
-                                }   
-                            } catch (Exception e) { }
-                        }
+                                    
+                                }
+                            }   
+                        } catch (Exception e) { }
                     }
-                } 
+                }
                 
                 try
                 {
                     int max = Collections.max(flowcount.values());
-                
+
                     for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) 
                     {
                         if (entry.getValue() == max)
                         {
-                            //println("[SUSPICIOUS] address : " + entry.getKey() + " used by " + entry.getValue() + " suspicious string");
                             analyseAddress(entry.getKey());
                         }
                     }
                 } catch (Exception e) { }
                  
-                ProcessBuilder pb = new ProcessBuilder("gcc", "-m32",decodefilename);
+                ProcessBuilder pb = new ProcessBuilder("gcc", "-m32",decodefilename,"-o","decode");
                 pb.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
                 Process procgcc = pb.start();
                 procgcc.waitFor();
 
 
-                for (Map.Entry<String, Boolean> entry : suspiciousstr.entrySet()) {
-                    if (entry.getValue())
-                    {
-                        ProcessBuilder pbdecode = new ProcessBuilder("./a.out", entry.getKey());
-                        pbdecode.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
-                        Process procdecode = pbdecode.start();
-
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(procdecode.getInputStream()));
-                        Stream<String> line = reader.lines();
-                        println("line : " + line.collect(Collectors.toList()));
-                        procdecode.waitFor();
-                    }
+                try
+                {
+                    String pathres = "/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/" + resfilename;
+                    File resfile = new File(pathres);
+                    FileWriter fwres = new FileWriter(resfile, false);
+                    PrintWriter pwres = new PrintWriter(fwres);
                     
+                    for (String s : suspiciousstr) {
+
+                    ProcessBuilder pbdecode = new ProcessBuilder("./decode", s);
+                    pbdecode.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
+                    Process procdecode = pbdecode.start();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(procdecode.getInputStream()));
+                    Stream<String> line = reader.lines();
+                    String res = String.join("\n",line.collect(Collectors.toList()));
+
+                    pwres.println(res);
+                    procdecode.waitFor();                
+                    }
+
+                    pwres.close();
+
+                } catch (Exception e) { 
+                    println("[ERROR] " + e.getMessage());
                 }
+
+                
             }
         }
     }
@@ -279,20 +298,34 @@ public class ScriptInspectingRodata extends GhidraScript {
     public int analyseAddress(Address addr)
     {
         Function fct = getFunctionAt(addr);
-
-        println("~ " + fct.getName()  + "  ~");
+        //println("~ " + fct.getName()  + "  ~");
         Set<Function> fctcalled = fct.getCalledFunctions(monitor);
         Function fctsubstr = null;
 
         for (Function f : fctcalled)
         {
             if (!(f.getName().startsWith("FUN")) && !(f.getName().startsWith("_"))) {
-                println("~ " + f.getName() + " ~");
+                //println("~ " + f.getName() + " ~");
                 fctsubstr = f;
                 break;
             }
         }
         
+        try
+        {
+            Parameter p = fct.getParameters()[0];
+            p.setDataType(new PointerDataType(new CharDataType()),true,true,fct.getSignatureSource());
+
+            for (Variable v : fct.getLocalVariables())
+            {
+                if (v.getDataType().isEquivalent(new Undefined1DataType()))
+                {
+                    v.setDataType(new ArrayDataType(new CharDataType(),4,1),fct.getSignatureSource());
+                }
+            }
+            fctsubstr.setReturnType(new PointerDataType(new CharDataType()),fctsubstr.getSignatureSource());
+        } catch (Exception e){ }
+
 
         DecompInterface ifc = new DecompInterface();
         ifc.openProgram(currentProgram);
@@ -304,7 +337,7 @@ public class ScriptInspectingRodata extends GhidraScript {
         DecompileResults resdecode = ifc.decompileFunction(fct,0,monitor);
         ClangTokenGroup tokgroupdecode = resdecode.getCCodeMarkup();       
         String ccode = tokgroupdecode.toString();
-        String convasmvol = "local_10 = asmvol(uVar3);";
+        String convasmvol = "iVar1 = asmvol(uVar4);";
 
         String asmvol = "\nint asmvol (uint inputval){" +
                         "int outvalue;\n"+
@@ -318,26 +351,26 @@ public class ScriptInspectingRodata extends GhidraScript {
                 
         String main =   "int main(int argc, char *argv[]){\n"+
                         " if (argc != 2) {fprintf(stderr, \"Usage: %s <String to Decode>\\n\", argv[0]);exit(EXIT_FAILURE);}"+
-                        " printf(\"Input: %s\\n\", argv[1]);\n" +
-                        " printf(\"Output: %s\\n\"," + fct.getName() + "(argv[1]));}\n";
+                        " printf(\"\\n-- START DECODING --\\nInput: %s\\n\", argv[1]);\n" +
+                        " printf(\"Output: %s\\n-- END DECODING --\\n\\n\"," + fct.getName() + "(argv[1]));}\n";
 
         ccode = "#include <stdlib.h>\n#include <stdio.h>\n#include <string.h>\n#include <sys/stat.h>\n" + ccodesubstr + ccode;
 
-        /* A CHANGER */
-        ccode = ccode.replace("if (local_10 != *(int *)(in_GS_OFFSET + 0x14)) {iVar2 = __stack_chk_fail_local();}","");
+        //Trigger an error ("stack smashing detected")
+        ccode = ccode.replace("if (iVar1 != *(int *)(in_GS_OFFSET + 0x14)) {iVar3 = __stack_chk_fail_local();}","");
+        //C-language conversion to use "byte"
+        ccode = ccode.replace("byte","unsigned char");
+
         ccode = ccode.replace("FUN_000111d0","strlen");
         ccode = ccode.replace("FUN_00011280","calloc");
         ccode = ccode.replace("FUN_00011240","strtol");
 
-        ccode = ccode.replace("byte","unsigned char");
-        ccode = ccode.replace("undefined4","char *");
 
         String delim = "(local_14,param_1,local_3c,4);";
         int index = ccode.indexOf(delim);
         ccode = ccode.substring(0, index + delim.length()) + convasmvol + ccode.substring(index + delim.length());
 
         ccode += asmvol + main;
-        ccode = ccode.replace("undefined","char"); 
 
 
         try
