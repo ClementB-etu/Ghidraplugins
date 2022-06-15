@@ -42,7 +42,6 @@ import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
 
-
 public class ScriptInspectingRodata extends GhidraScript {
 
     /*
@@ -190,6 +189,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                 */
                 double etypeScore = 0;
                 double treshold = 0;
+                int nbdetect = 0;
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
                     etypeScore += Math.pow((entry.getValue()-meanScore),2);
                 }
@@ -197,7 +197,10 @@ public class ScriptInspectingRodata extends GhidraScript {
                 etypeScore = Math.sqrt(etypeScore / scores.size());
                 println("standard deviation entropy is : " + etypeScore);
 
-                treshold = meanScore + (etypeScore/Math.sqrt(scores.size())) ; // Borne supérieur de l'intervalle de confiance à 68%
+                //Comment choisir le seuil ?
+
+                //
+                treshold = meanScore + 1.9*(etypeScore/Math.sqrt(scores.size())) ; // Borne supérieur de l'intervalle de confiance à 95% (formule)
                 println("treshold entropy is : " + treshold);
 
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
@@ -205,12 +208,15 @@ public class ScriptInspectingRodata extends GhidraScript {
                     //This condition needs improvment (a lot of non-detected suspicious string)
                     if (entry.getValue() > treshold)
                     {
-                        println("[SUSPICIOUS] dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
+                        println("\n[SUSPICIOUS] dat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
                         suspiciousstr.add(entry.getKey());
+                        nbdetect++;
                     } else {
-                        println("dat : " + entry.getKey() + " (score : " + entry.getValue() + " )");
+                        println("\ndat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
                     }
+                    
                 }
+                println(nbdetect + " detected (" + nbdetect+"/"+scores.size()+")");
 
                 for (String s : suspiciousstr) {
                     
@@ -464,4 +470,10 @@ public class ScriptInspectingRodata extends GhidraScript {
         }
 	
 	}
+
+    public int graph(Double[] points) {
+
+
+        return 0;
+    }
 }

