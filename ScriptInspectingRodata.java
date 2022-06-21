@@ -38,6 +38,7 @@ import ghidra.program.util.DefinedDataIterator;
 import java.lang.Math;
 import java.util.*;
 import java.util.stream.*;  
+import java.util.zip.*;
 import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
@@ -170,13 +171,52 @@ public class ScriptInspectingRodata extends GhidraScript {
                         double score = (scoresymbols + scorelenght + scoreentropy + scorexref);
                         meanScore += score;*/
 
-                        meanScore += getShannonEntropy((String) dat.getValue());
+                        String str = (String) dat.getValue();
+                        double entr = getShannonEntropy(str);
+                        println("\nSTR entropy : " + entr + " ( " + str + " )");
+
+                        /*
+                        * working with compressed string to see any difference between encoded/non-encoded string
+                        */
+                        String compressedstr = str + str + str;
+                        
+                        Deflater def = new Deflater();
+                        def.setInput(compressedstr.getBytes("UTF-8")); 
+                        def.finish();
+                        byte compString[] = new byte[1024];
+                        int compSize = def.deflate(compString);
+                        //int compSize = def.deflate(compString, 3, 13, Deflater.FULL_FLUSH);
+                        String finstr = new String(compString);
+                        println("Compressed str size : " + compSize + " entr : " + getShannonEntropy(finstr) +"\n " + finstr);
+                        def.end();
+
+
+                        int nbparts = str.length()/4;
+                        meanScore += entr;
+                        List<Double> listentr = new ArrayList<Double>();
+                        for (int i = 0; i<nbparts;i++) 
+                        {   
+                            int start = i*(str.length()/nbparts);
+                            int end = (i+1)*((str.length()/nbparts));
+                            String sub = str.substring(start,end);
+                            Double subentr = getShannonEntropy(sub);
+                            listentr.add(subentr);
+                            
+                            //println("SUBSTR entropy : " + subentr + " ( " + sub + " )");
+                        }                                           
+                        //println("MIN entr : " + Collections.min(listentr));
+                        //println("MAX entr : " + Collections.max(listentr));
+                        /*if ((Collections.max(listentr) - Collections.min(listentr)) < 0.2)
+                        {
+                            println("[SUS] str : " + str);
+
+                        }*/
 
                         /*data.put((String) dat.getValue(), dat);
                         scores.put((String) dat.getValue(),score);*/
 
-                        data.put((String) dat.getValue(), dat);
-                        scores.put((String) dat.getValue(),getShannonEntropy((String) dat.getValue()));
+                        data.put(str, dat);
+                        scores.put(str,entr);
                         
                     }
                 }
@@ -208,11 +248,11 @@ public class ScriptInspectingRodata extends GhidraScript {
                     //This condition needs improvment (a lot of non-detected suspicious string)
                     if (entry.getValue() > treshold)
                     {
-                        println("\n[SUSPICIOUS] dat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
+                        //println("\n[SUSPICIOUS] dat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
                         suspiciousstr.add(entry.getKey());
                         nbdetect++;
                     } else {
-                        println("\ndat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
+                        //println("\ndat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
                     }
                     
                 }
@@ -395,11 +435,11 @@ public class ScriptInspectingRodata extends GhidraScript {
     }
 
 
-    public static byte[] getSliceOfArray(byte[] arr, int start, int end)
+    public static Object[] getSliceOfArray(Object[] arr, int start, int end)
     {
   
         // Get the slice of the Array
-        byte[] slice = new byte[end - start];
+        Object[] slice = new Object[end - start];
   
         // Copy elements of arr to slice
         for (int i = 0; i < slice.length; i++) {
@@ -438,7 +478,7 @@ public class ScriptInspectingRodata extends GhidraScript {
 		return -e;
 	}
 
-    //Return 1 if s contient seulement [0-9] et [aA-zZ], 0 sinon
+    //Return 1 si s contient seulement [0-9] et [aA-zZ], 0 sinon
     public int getNumberOrLetter(String s) {
 		if (s == null) {
 			return 0;
