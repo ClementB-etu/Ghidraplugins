@@ -173,11 +173,11 @@ public class ScriptInspectingRodata extends GhidraScript {
 
                         String str = (String) dat.getValue();
                         double entr = getShannonEntropy(str);
-                        println("\nSTR entropy : " + entr + " ( " + str + " )");
+                        println("\n\nSTR entropy : " + entr + " ( " + str + " )");
 
                         /*
                         * working with compressed string to see any difference between encoded/non-encoded string
-                        */
+                        
                         String compressedstr = str + str + str;
                         
                         Deflater def = new Deflater();
@@ -187,11 +187,12 @@ public class ScriptInspectingRodata extends GhidraScript {
                         int compSize = def.deflate(compString);
                         //int compSize = def.deflate(compString, 3, 13, Deflater.FULL_FLUSH);
                         String finstr = new String(compString);
-                        println("Compressed str size : " + compSize + " entr : " + getShannonEntropy(finstr) +"\n " + finstr);
+                        double ratio = entr/getShannonEntropy(finstr);
+                        println("Compressed str size : " + compSize + " entr : " + getShannonEntropy(finstr) + "\nratio : " + ratio + "\n");
                         def.end();
+                        */
 
-
-                        int nbparts = str.length()/4;
+                        int nbparts = str.length()/8;
                         meanScore += entr;
                         List<Double> listentr = new ArrayList<Double>();
                         for (int i = 0; i<nbparts;i++) 
