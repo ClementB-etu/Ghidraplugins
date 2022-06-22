@@ -173,6 +173,8 @@ public class ScriptInspectingRodata extends GhidraScript {
 
                         String str = (String) dat.getValue();
                         double entr = getShannonEntropy(str);
+                        meanScore += entr;
+
                         println("\n\nSTR entropy : " + entr + " ( " + str + " )");
 
                         /*
@@ -192,8 +194,10 @@ public class ScriptInspectingRodata extends GhidraScript {
                         def.end();
                         */
 
+                        /*
+                        * working with subparts
+
                         int nbparts = str.length()/8;
-                        meanScore += entr;
                         List<Double> listentr = new ArrayList<Double>();
                         for (int i = 0; i<nbparts;i++) 
                         {   
@@ -207,11 +211,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                         }                                           
                         //println("MIN entr : " + Collections.min(listentr));
                         //println("MAX entr : " + Collections.max(listentr));
-                        /*if ((Collections.max(listentr) - Collections.min(listentr)) < 0.2)
-                        {
-                            println("[SUS] str : " + str);
-
-                        }*/
+                        */
 
                         /*data.put((String) dat.getValue(), dat);
                         scores.put((String) dat.getValue(),score);*/
