@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Ghidra Script - Sanitizing, Inspecting & deobfuscating sanitized data in .rodata
+//Ghidra Script - Inspecting data (strings) and looking for a possible decoding function
 //@category    Examples
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
@@ -34,6 +34,7 @@ import ghidra.program.model.listing.*;
 import ghidra.program.model.data.*;
 import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.util.DefinedDataIterator;
+import ghidra.program.util.string.*;
 
 import java.lang.Math;
 import java.util.*;
@@ -43,22 +44,7 @@ import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
 
-public class ScriptInspectingRodata extends GhidraScript {
-
-    /*
-    *   Weigths used regarding the relevance of each indicator
-    *
-    *   symbolW : weight used when a string only contains [aA-zZ][0-9]
-    *   lengthW : weight used when a string has a string which is a multiple from 4
-    *   entropyW : weight used with the string's entropy
-    *   nbrXREFW : weight used with the number of the XREF that the string has
-    *
-    */
-
-    int entropyW = 12;
-    int symbolW = 10;
-    int nbrXREFW = 4;
-    int lengthW = 2;
+public class Scriptv1 extends GhidraScript {
     
 
     /*
@@ -66,6 +52,8 @@ public class ScriptInspectingRodata extends GhidraScript {
     */
     String decodefilename = "decode.c";
     String resfilename = "res.txt";
+    Set<String> foundstr = new HashSet<String>(); 
+
 
     @Override
     protected void run() throws Exception {
@@ -78,62 +66,20 @@ public class ScriptInspectingRodata extends GhidraScript {
             return;
         }
 
-        /*
-        *   First, all the "blocks" (sections) bytes are retrieved
-        *   We only focus on the ".rodata" section, because that's where strings used in the executable are stored
-        */
+       
         Listing listing = currentProgram.getListing();
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
-        ByteProvider byteProvider = new MemoryByteProvider(mem, currentProgram.getImageBase());
-        MemoryBlock[] memblocksSections = mem.getBlocks();
 
 
+        StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
+        // Ne fonctionne pas
+        AddressSetView addressview = ss.search(null, new FoundStringCallback(), true, monitor); 
 
-        for (MemoryBlock secblock : memblocksSections) {
+        /*for (MemoryBlock secblock : memblocksSections) {
             if (secblock.getName().equals(".rodata"))
             {
-                byte[] b = new byte[(int)secblock.getSize()];
-                if (secblock.getBytes(secblock.getStart(),b) > -1)
-                {
-                    println("["+ secblock.getName() +"] : bytes retreived");
-                }
                 
-                Address addr = secblock.getStart();
-
-                //Iterates through .rodata to sanitize str (even with big strings that aren't analyzed by Ghidra's analyzer)
-                while (secblock.contains(addr))
-                {
-                    Data dat = currentProgram.getListing().getDataAt(addr);
-                    long lgth = dat.getLength();
-
-                    /*
-                    * Initially, "unsanitize" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
-                    */
-                    if (lgth == 1)
-                    {
-                        try 
-                        {
-                            currentProgram.getListing().createData​(addr, StringDataType.dataType);
-                            //Datatype changed, so string has been created and dat (value, length ... )has changed
-
-                            dat = currentProgram.getListing().getDataAt(addr);
-                            lgth = dat.getLength();
-                            //If lgth doesn't change, it isn't a string so codeunit needs to be clear in order not to crash during the next execution (if string exist at this addr, it crashes when creating string)
-                            if (lgth == 1) 
-                            {
-                                currentProgram.getListing().clearCodeUnits(addr, addr.add(1), true);
-                            }
-                            addr = addr.add(lgth);
-
-                        } catch (Exception e) {
-                            println(e.getMessage());
-                        }
-
-                    } else {
-                        addr = addr.add(lgth);
-                    }  
-                }
 
                 double meanScore = 0;
                 Map<String, Data> data = new HashMap<String, Data>();
@@ -154,67 +100,11 @@ public class ScriptInspectingRodata extends GhidraScript {
                             refit.next();
                         }
 
-                        //println("dat : " + ((String) dat.getValue()) + "(number or letter ? : " + getNumberOrLetter(((String) dat.getValue())) + " )");
-                        //println("dat : " + ((String) dat.getValue()) + "(appropriate length ? : " + getAppropriateLength(((String) dat.getValue())) + " )");
-                        //println("dat : " + ((String) dat.getValue()) + "(entropy : " + getShannonEntropy(((String) dat.getValue())) + " )");
-                        //println("dat : " + ((String) dat.getValue()) + "(nbr XREF : " + nbref + " )");
-
-                        /*
-                        *   Here, we calculate indicators for all strings, and associate a score to each depending on the weights we discussed at the begining
-                        *   Then, we store the results
-                        */
-
-                        /*double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
-                        double scorelenght = getAppropriateLength((String) dat.getValue()) * this.lengthW;
-                        double scoreentropy = getShannonEntropy((String) dat.getValue()) * this.entropyW;
-                        double scorexref = nbref * this.nbrXREFW;
-                        double score = (scoresymbols + scorelenght + scoreentropy + scorexref);
-                        meanScore += score;*/
-
                         String str = (String) dat.getValue();
                         double entr = getShannonEntropy(str);
                         meanScore += entr;
 
                         println("\n\nSTR entropy : " + entr + " ( " + str + " )");
-
-                        /*
-                        * working with compressed string to see any difference between encoded/non-encoded string
-                        
-                        String compressedstr = str + str + str;
-                        
-                        Deflater def = new Deflater();
-                        def.setInput(compressedstr.getBytes("UTF-8")); 
-                        def.finish();
-                        byte compString[] = new byte[1024];
-                        int compSize = def.deflate(compString);
-                        //int compSize = def.deflate(compString, 3, 13, Deflater.FULL_FLUSH);
-                        String finstr = new String(compString);
-                        double ratio = entr/getShannonEntropy(finstr);
-                        println("Compressed str size : " + compSize + " entr : " + getShannonEntropy(finstr) + "\nratio : " + ratio + "\n");
-                        def.end();
-                        */
-
-                        /*
-                        * working with subparts
-
-                        int nbparts = str.length()/8;
-                        List<Double> listentr = new ArrayList<Double>();
-                        for (int i = 0; i<nbparts;i++) 
-                        {   
-                            int start = i*(str.length()/nbparts);
-                            int end = (i+1)*((str.length()/nbparts));
-                            String sub = str.substring(start,end);
-                            Double subentr = getShannonEntropy(sub);
-                            listentr.add(subentr);
-                            
-                            //println("SUBSTR entropy : " + subentr + " ( " + sub + " )");
-                        }                                           
-                        //println("MIN entr : " + Collections.min(listentr));
-                        //println("MAX entr : " + Collections.max(listentr));
-                        */
-
-                        /*data.put((String) dat.getValue(), dat);
-                        scores.put((String) dat.getValue(),score);*/
 
                         data.put(str, dat);
                         scores.put(str,entr);
@@ -225,9 +115,9 @@ public class ScriptInspectingRodata extends GhidraScript {
                 meanScore /= scores.size();
                 println("mean entropy is : " + (meanScore));
 
-                /*
-                *  Now, we calculate the mean and the standard deviation
-                */
+                
+                //Now, we calculate the mean and the standard deviation
+                
                 double etypeScore = 0;
                 double treshold = 0;
                 int nbdetect = 0;
@@ -237,27 +127,6 @@ public class ScriptInspectingRodata extends GhidraScript {
 
                 etypeScore = Math.sqrt(etypeScore / scores.size());
                 println("standard deviation entropy is : " + etypeScore);
-
-                //Comment choisir le seuil ?
-
-                //
-                treshold = meanScore + 1.9*(etypeScore/Math.sqrt(scores.size())) ; // Borne supérieur de l'intervalle de confiance à 95% (formule)
-                println("treshold entropy is : " + treshold);
-
-                for (Map.Entry<String, Double> entry : scores.entrySet()) {
-                    
-                    //This condition needs improvment (a lot of non-detected suspicious string)
-                    if (entry.getValue() > treshold)
-                    {
-                        //println("\n[SUSPICIOUS] dat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
-                        suspiciousstr.add(entry.getKey());
-                        nbdetect++;
-                    } else {
-                        //println("\ndat : " + entry.getKey() + "\n(score : " + entry.getValue() + " )\n");
-                    }
-                    
-                }
-                println(nbdetect + " detected (" + nbdetect+"/"+scores.size()+")");
 
                 for (String s : suspiciousstr) {
                     
@@ -300,7 +169,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                     {
                         if (entry.getValue() == max)
                         {
-                            analyseAddress(entry.getKey());
+                            //analyseAddress(entry.getKey());
                         }
                     }
                 } catch (Exception e) { }
@@ -339,7 +208,11 @@ public class ScriptInspectingRodata extends GhidraScript {
 
                 
             }
-        }
+        }*/
+    }
+
+    public void callback(String s) {
+        foundstr.add(s);
     }
 
     public int analyseAddress(Address addr)
@@ -384,41 +257,6 @@ public class ScriptInspectingRodata extends GhidraScript {
         DecompileResults resdecode = ifc.decompileFunction(fct,0,monitor);
         ClangTokenGroup tokgroupdecode = resdecode.getCCodeMarkup();       
         String ccode = tokgroupdecode.toString();
-        String convasmvol = "iVar1 = asmvol(uVar4);";
-
-        String asmvol = "\nint asmvol (uint inputval){" +
-                        "int outvalue;\n"+
-                        "__asm__ volatile (\n"+
-                        "\t\" mov %1,%%eax\\n\"\n"+
-                        "\t\" aad\\n\"\n" +
-                        "\t\"  mov %%eax,%0\\n\"\n" +
-                        "\t:\"=r\" (outvalue) /* %0: Output variable list */\n" +
-                        "\t:\"r\" (inputval) /* %1: Input variable list */\n" +
-                        "\t:\"%eax\" /* Overwritten registers ('Clobber list') */);return outvalue;}\n";                
-                
-        String main =   "int main(int argc, char *argv[]){\n"+
-                        " if (argc != 2) {fprintf(stderr, \"Usage: %s <String to Decode>\\n\", argv[0]);exit(EXIT_FAILURE);}"+
-                        " printf(\"\\n-- START DECODING --\\nInput: %s\\n\", argv[1]);\n" +
-                        " printf(\"Output: %s\\n-- END DECODING --\\n\\n\"," + fct.getName() + "(argv[1]));}\n";
-
-        ccode = "#include <stdlib.h>\n#include <stdio.h>\n#include <string.h>\n#include <sys/stat.h>\n" + ccodesubstr + ccode;
-
-        //Trigger an error ("stack smashing detected")
-        ccode = ccode.replace("if (iVar1 != *(int *)(in_GS_OFFSET + 0x14)) {iVar3 = __stack_chk_fail_local();}","");
-        //C-language conversion to use "byte"
-        ccode = ccode.replace("byte","unsigned char");
-
-        ccode = ccode.replace("FUN_000111d0","strlen");
-        ccode = ccode.replace("FUN_00011280","calloc");
-        ccode = ccode.replace("FUN_00011240","strtol");
-
-
-        String delim = "(local_14,param_1,local_3c,4);";
-        int index = ccode.indexOf(delim);
-        ccode = ccode.substring(0, index + delim.length()) + convasmvol + ccode.substring(index + delim.length());
-
-        ccode += asmvol + main;
-
 
         try
         {
@@ -434,7 +272,6 @@ public class ScriptInspectingRodata extends GhidraScript {
        
         return 0;
     }
-
 
     public static double log2(double x) {
 		return (double) (Math.log(x) / Math.log(2));
@@ -464,36 +301,5 @@ public class ScriptInspectingRodata extends GhidraScript {
 		return -e;
 	}
 
-    //Return 1 si s contient seulement [0-9] et [aA-zZ], 0 sinon
-    public int getNumberOrLetter(String s) {
-		if (s == null) {
-			return 0;
-		}
-		for (int c_ = 0; c_ < s.length(); ++c_) {
-			char cx = s.charAt(c_);
-            int ascii = (int) cx;
-
-            if (!(ascii>47 && ascii<58) && !(ascii>64 && ascii<91) && !(ascii>96 && ascii<123))
-            {
-                return 0;
-            }
-		}
-	
-		return 1;
-	}
-
-    //Return 1 if s est d'une longueur multiple de 4 (car chaque caractère encode utilise 2bytes(4 caractères))
-    public int getAppropriateLength(String s) {
-		if (s == null) {
-			return 0;
-		}
-
-		if ((s.length()%4) == 0)
-        {
-		    return 1;
-        } else {
-            return 0;
-        }
-	
-	}
+   
 }

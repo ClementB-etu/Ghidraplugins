@@ -34,12 +34,6 @@ Output: mkdir -p LbCWNozy; echo 'module UTF-8// LBCWNOZY// LbCWNozy 2' > LbCWNoz
 
 
 -- START DECODING --
-Input: 905be5faf5093aaffc786bc44c2edb6c310fdfe7479202e7668c003704cb291a6ff5
-Output: PATH=GCONV_PATH=.
--- END DECODING --
-
-
--- START DECODING --
 Input: d3b93a8f1f543ce2d5df275ae0c76da81106cf19b4672a82c5882ec909861ef755986d6d7074
 Output: LbCWNozy/LbCWNozy.c
 -- END DECODING --
