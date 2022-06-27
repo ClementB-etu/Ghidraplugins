@@ -18,6 +18,8 @@
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
 
+package pluginstring;
+
 import ghidra.app.script.GhidraScript;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.bin.MemoryByteProvider;
@@ -35,6 +37,7 @@ import ghidra.program.model.data.*;
 import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.util.DefinedDataIterator;
 import ghidra.program.util.string.*;
+import ghidra.program.model.address.AddressSetView;
 
 import java.lang.Math;
 import java.util.*;
@@ -71,10 +74,11 @@ public class Scriptv1 extends GhidraScript {
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
 
-
+        FoundStrings f = new FoundStrings();
         StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
         // Ne fonctionne pas
-        AddressSetView addressview = ss.search(null, new FoundStringCallback(), true, monitor); 
+        AddressSetView addressview = ss.search(null,f, true, monitor);
+
 
         /*for (MemoryBlock secblock : memblocksSections) {
             if (secblock.getName().equals(".rodata"))
@@ -209,10 +213,6 @@ public class Scriptv1 extends GhidraScript {
                 
             }
         }*/
-    }
-
-    public void callback(String s) {
-        foundstr.add(s);
     }
 
     public int analyseAddress(Address addr)
