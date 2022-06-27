@@ -18,7 +18,6 @@
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
 
-package pluginstring;
 
 import ghidra.app.script.GhidraScript;
 import ghidra.app.util.bin.ByteProvider;
@@ -74,10 +73,21 @@ public class Scriptv1 extends GhidraScript {
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
 
-        FoundStrings f = new FoundStrings();
+
+        Set<FoundString> list = new HashSet<FoundString>();
+
+        FoundStringCallback foundStringCallback = foundString -> list.add(foundString);
+
         StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
-        // Ne fonctionne pas
-        AddressSetView addressview = ss.search(null,f, true, monitor);
+        
+        AddressSetView addressview = ss.search(null,foundStringCallback, true, monitor);
+
+        for (FoundString f : list)
+        {   
+            ReferenceIterator refit = f.getDataInstance​(mem).getReferenceIteratorTo();
+
+            println(">" + f.getDataInstance​(mem));                    
+        }
 
 
         /*for (MemoryBlock secblock : memblocksSections) {
