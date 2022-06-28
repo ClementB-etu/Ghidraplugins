@@ -34,6 +34,7 @@ import ghidra.program.model.mem.*;
 import ghidra.program.model.listing.*;
 import ghidra.program.model.data.*;
 import ghidra.program.model.symbol.ReferenceIterator;
+import ghidra.program.model.symbol.Reference;
 import ghidra.program.util.DefinedDataIterator;
 import ghidra.program.util.string.*;
 import ghidra.program.model.address.AddressSetView;
@@ -72,7 +73,52 @@ public class Scriptv1 extends GhidraScript {
         Listing listing = currentProgram.getListing();
         InstructionIterator listIt = listing.getInstructions(true);
         Memory mem = currentProgram.getMemory();
+        MemoryBlock[] memblocksSections = mem.getBlocks();
 
+
+
+        for (MemoryBlock secblock : memblocksSections) {
+            if (secblock.getName().equals(".rodata"))
+            {
+                byte[] b = new byte[(int)secblock.getSize()];                
+                Address addr = secblock.getStart();
+
+                //Iterates through .rodata to "create" str (even big strings that aren't analyzed by Ghidra's analyzer)
+                while (secblock.contains(addr))
+                {
+                    Data dat = currentProgram.getListing().getDataAt(addr);
+                    long lgth = dat.getLength();
+
+                    /*
+                    * Initially, "unsanitize" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
+                    */
+                    if (lgth == 1)
+                    {
+                        try 
+                        {
+                            currentProgram.getListing().createData​(addr, StringDataType.dataType);
+                            //Datatype changed, so string has been created and dat (value, length ... )has changed
+
+                            dat = currentProgram.getListing().getDataAt(addr);
+                            lgth = dat.getLength();
+                            //If lgth doesn't change, it isn't a string so codeunit needs to be clear in order not to crash during the next execution (if string exist at this addr, it crashes when creating string)
+                            if (lgth == 1) 
+                            {
+                                currentProgram.getListing().clearCodeUnits(addr, addr.add(1), true);
+                            }
+                            addr = addr.add(lgth);
+
+                        } catch (Exception e) {
+                            println(e.getMessage());
+                        }
+
+                    } else {
+                        addr = addr.add(lgth);
+                    }  
+                }
+                break;
+            }
+        }
 
         Set<FoundString> list = new HashSet<FoundString>();
 
@@ -82,13 +128,69 @@ public class Scriptv1 extends GhidraScript {
         
         AddressSetView addressview = ss.search(null,foundStringCallback, true, monitor);
 
+        Map<Address, Integer> refcount = new HashMap<Address, Integer>();
+        Map<Address, List<String>> refobj = new HashMap<Address, List<String>>();
+
         for (FoundString f : list)
         {   
-            ReferenceIterator refit = f.getDataInstance​(mem).getReferenceIteratorTo();
 
-            println(">" + f.getDataInstance​(mem));                    
+            Data data = getDataAt(f.getAddress());
+            try
+            {
+                ReferenceIterator refit = data.getReferenceIteratorTo();
+
+                refit.forEach(ref -> {
+                    Address addrFrom = ref.getFromAddress();
+                    Instruction i = getInstructionAt(addrFrom);
+
+                    if (i.getMnemonicString().equals("PUSH"))
+                    {
+                        Instruction nextinstr = i.getNext();
+                    
+                        if (nextinstr.getMnemonicString().equals("CALL"))
+                        {
+                            //Retrieve address used by the CALL instruction
+                            Address[] flows = nextinstr.getFlows();
+                            for (int j = 0; j<flows.length;j++)
+                            {
+                                if (refcount.containsKey(flows[j]))
+                                {
+                                    refcount.put(flows[j],refcount.get(flows[j]) + 1);
+
+                                    List<String> listStr = new ArrayList<String>();
+                                    listStr.addAll(refobj.get(flows[j]));
+                                    listStr.add(f.getDataInstance​(mem).toString());
+                                    refobj.put(flows[j],listStr);
+
+                                } else {
+                                    refcount.put(flows[j],1);
+
+                                    List<String> listStr = new ArrayList<String>();
+                                    listStr.add(f.getDataInstance​(mem).toString());
+                                    refobj.put(flows[j],listStr);
+                                }
+                            }    
+                        }
+                    } 
+                });
+
+            } catch (Exception e) {  }                                 
         }
-        
+
+        int max = Collections.max(refcount.values());
+        Address addrsus = null;
+        for (Map.Entry<Address, Integer> entry : refcount.entrySet()) 
+        {
+            if (entry.getValue() == max)
+            {
+                addrsus = entry.getKey();
+                println("SUS ADDRESS : " + (addrsus) + " ( called with a string " + max + " times ) :");                
+            }
+        }
+
+        List<String> res = refobj.get(addrsus);  
+        res.forEach(r -> println(" -* " + r));
+         
     }
 
     public int analyseAddress(Address addr)

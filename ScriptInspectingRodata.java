@@ -295,7 +295,7 @@ public class ScriptInspectingRodata extends GhidraScript {
                 try
                 {
                     int max = Collections.max(flowcount.values());
-
+                    
                     for (Map.Entry<Address, Integer> entry : flowcount.entrySet()) 
                     {
                         if (entry.getValue() == max)
