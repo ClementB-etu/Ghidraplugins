@@ -184,12 +184,12 @@ public class Scriptv1 extends GhidraScript {
             if (entry.getValue() == max)
             {
                 addrsus = entry.getKey();
-                println("SUS ADDRESS : " + (addrsus) + " ( called with a string " + max + " times ) :");                
+                println("Suspicious address : " + (addrsus) + " ( called with a string " + max + " times ) :");                
             }
         }
 
         List<String> res = refobj.get(addrsus);  
-        res.forEach(r -> println(" -* " + r));
+        res.forEach(r -> println(" * " + r));
          
     }
 
