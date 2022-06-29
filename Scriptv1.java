@@ -45,14 +45,32 @@ public class Scriptv1 extends GhidraScript {
     
 
     /*
-    * Name of the file created to be compiled and used to decode suspicious strings
+    * Name of the file created to store the decompiled "decoding function"
     */
-    String decodefilename = "decode.c";
-    String resfilename = "res.txt";
+    String resfilename = "res.c";
 
 
     @Override
     protected void run() throws Exception {
+        /*
+        *
+        */
+        Memory mem = currentProgram.getMemory();
+        MemoryBlock[] memblocksSections = mem.getBlocks();
+
+        /*
+        *
+        */
+        Set<FoundString> list = new HashSet<FoundString>();
+        FoundStringCallback foundStringCallback = foundString -> list.add(foundString);
+        StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
+        AddressSetView addressview = ss.search(null,foundStringCallback, true, monitor);
+
+        /*
+        *   
+        */
+        Map<Address, Integer> refcount = new HashMap<Address, Integer>();
+        Map<Address, List<String>> refobj = new HashMap<Address, List<String>>();
 
         if (currentProgram == null) {
             Msg.showError(this,
@@ -61,14 +79,6 @@ public class Scriptv1 extends GhidraScript {
                     "This script should be run from a tool with open program.");
             return;
         }
-
-       
-        Listing listing = currentProgram.getListing();
-        InstructionIterator listIt = listing.getInstructions(true);
-        Memory mem = currentProgram.getMemory();
-        MemoryBlock[] memblocksSections = mem.getBlocks();
-
-
 
         for (MemoryBlock secblock : memblocksSections) {
             if (secblock.getName().equals(".rodata"))
@@ -83,7 +93,7 @@ public class Scriptv1 extends GhidraScript {
                     long lgth = dat.getLength();
 
                     /*
-                    * Initially, "unsanitize" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
+                    * Initially, "unrecognized" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
                     */
                     if (lgth == 1)
                     {
@@ -113,20 +123,8 @@ public class Scriptv1 extends GhidraScript {
             }
         }
 
-        Set<FoundString> list = new HashSet<FoundString>();
-
-        FoundStringCallback foundStringCallback = foundString -> list.add(foundString);
-
-        StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
-        
-        AddressSetView addressview = ss.search(null,foundStringCallback, true, monitor);
-
-        Map<Address, Integer> refcount = new HashMap<Address, Integer>();
-        Map<Address, List<String>> refobj = new HashMap<Address, List<String>>();
-
         for (FoundString f : list)
         {   
-
             Data data = getDataAt(f.getAddress());
             try
             {
@@ -144,19 +142,22 @@ public class Scriptv1 extends GhidraScript {
                         {
                             nextinstr = i.getNext();  
                         }
-                        //Retrieve address used by the CALL instruction
+                        //Retrieve address "used" by the CALL instruction
                         Address[] flows = nextinstr.getFlows();
                         for (int j = 0; j<flows.length;j++)
                         {
+                            println("ref : " + ref + " -> " + flows[j]); 
                             if (refcount.containsKey(flows[j]))
                             {
                                 refcount.put(flows[j],refcount.get(flows[j]) + 1);
+
                                 List<String> listStr = new ArrayList<String>();
                                 listStr.addAll(refobj.get(flows[j]));
                                 listStr.add(f.getDataInstance​(mem).toString());
                                 refobj.put(flows[j],listStr);
                             } else {
                                 refcount.put(flows[j],1);
+
                                 List<String> listStr = new ArrayList<String>();
                                 listStr.add(f.getDataInstance​(mem).toString());
                                 refobj.put(flows[j],listStr);
@@ -165,82 +166,49 @@ public class Scriptv1 extends GhidraScript {
                     } 
                 });
 
-            } catch (Exception e) {  }                                 
+            } catch (Exception e) { }                                 
         }
 
         int max = Collections.max(refcount.values());
         Address addrsus = null;
+        Function fct = null;
+        
         for (Map.Entry<Address, Integer> entry : refcount.entrySet()) 
         {
             if (entry.getValue() == max)
             {
                 addrsus = entry.getKey();
-                println("Suspicious address : " + (addrsus) + " ( called with a string " + max + " times ) :");                
+                fct = getFunctionAt(addrsus);
+                println("Suspicious address : " + (addrsus) + " ( "  + fct.getName() + " called with a string " + max + " times ) :");                
             }
         }
 
         List<String> res = refobj.get(addrsus);  
         res.forEach(r -> println(" * " + r));
-         
-    }
-
-    public int analyseAddress(Address addr)
-    {
-        Function fct = getFunctionAt(addr);
-        //println("~ " + fct.getName()  + "  ~");
-        Set<Function> fctcalled = fct.getCalledFunctions(monitor);
-        Function fctsubstr = null;
-
-        for (Function f : fctcalled)
-        {
-            if (!(f.getName().startsWith("FUN")) && !(f.getName().startsWith("_"))) {
-                //println("~ " + f.getName() + " ~");
-                fctsubstr = f;
-                break;
-            }
-        }
-        
-        try
-        {
-            Parameter p = fct.getParameters()[0];
-            p.setDataType(new PointerDataType(new CharDataType()),true,true,fct.getSignatureSource());
-
-            for (Variable v : fct.getLocalVariables())
-            {
-                if (v.getDataType().isEquivalent(new Undefined1DataType()))
-                {
-                    v.setDataType(new ArrayDataType(new CharDataType(),4,1),fct.getSignatureSource());
-                }
-            }
-            fctsubstr.setReturnType(new PointerDataType(new CharDataType()),fctsubstr.getSignatureSource());
-        } catch (Exception e){ }
 
 
         DecompInterface ifc = new DecompInterface();
         ifc.openProgram(currentProgram);
 
-        DecompileResults ressubstr = ifc.decompileFunction(fctsubstr,0,monitor);
+        DecompileResults ressubstr = ifc.decompileFunction(fct,0,monitor);
         ClangTokenGroup tokgroupsubstr = ressubstr.getCCodeMarkup();
-        String ccodesubstr = tokgroupsubstr.toString();
-
-        DecompileResults resdecode = ifc.decompileFunction(fct,0,monitor);
-        ClangTokenGroup tokgroupdecode = resdecode.getCCodeMarkup();       
-        String ccode = tokgroupdecode.toString();
+        String ccode = tokgroupsubstr.toString();
 
         try
         {
-            String path = "/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/" + decodefilename;
+            String path = resfilename;
             File code = new File(path);
             FileWriter fw = new FileWriter(code, false);
             PrintWriter pw = new PrintWriter(fw);
             pw.println(ccode);
             pw.close();
+            println(" ** Code of the suposed decoding function on file : ~/" + path);
         } catch (Exception e) { 
             println("[ERROR] " + e.getMessage());
         }
-       
-        return 0;
     }
+ 
+   
 
     public static double log2(double x) {
 		return (double) (Math.log(x) / Math.log(2));

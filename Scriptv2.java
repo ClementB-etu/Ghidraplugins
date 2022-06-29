@@ -43,7 +43,7 @@ import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
 
-public class ScriptInspectingRodata extends GhidraScript {
+public class Scriptv2 extends GhidraScript {
 
     /*
     *   Weigths used regarding the relevance of each indicator
