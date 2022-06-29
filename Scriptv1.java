@@ -146,7 +146,6 @@ public class Scriptv1 extends GhidraScript {
                         Address[] flows = nextinstr.getFlows();
                         for (int j = 0; j<flows.length;j++)
                         {
-                            println("ref : " + ref + " -> " + flows[j]); 
                             if (refcount.containsKey(flows[j]))
                             {
                                 refcount.put(flows[j],refcount.get(flows[j]) + 1);
@@ -179,20 +178,19 @@ public class Scriptv1 extends GhidraScript {
             {
                 addrsus = entry.getKey();
                 fct = getFunctionAt(addrsus);
-                println("Suspicious address : " + (addrsus) + " ( "  + fct.getName() + " called with a string " + max + " times ) :");                
+                println("Suspicious address : " + (addrsus) + " ( "  + fct.getSignature() + " called with a string " + max + " times ) :");                
             }
         }
 
         List<String> res = refobj.get(addrsus);  
         res.forEach(r -> println(" * " + r));
 
-
         DecompInterface ifc = new DecompInterface();
         ifc.openProgram(currentProgram);
 
-        DecompileResults ressubstr = ifc.decompileFunction(fct,0,monitor);
-        ClangTokenGroup tokgroupsubstr = ressubstr.getCCodeMarkup();
-        String ccode = tokgroupsubstr.toString();
+        DecompileResults rescode = ifc.decompileFunction(fct,0,monitor);
+        ClangTokenGroup tokgroupcode = rescode.getCCodeMarkup();
+        String ccode = tokgroupcode.toString();
 
         try
         {
@@ -207,8 +205,6 @@ public class Scriptv1 extends GhidraScript {
             println("[ERROR] " + e.getMessage());
         }
     }
- 
-   
 
     public static double log2(double x) {
 		return (double) (Math.log(x) / Math.log(2));
@@ -237,6 +233,5 @@ public class Scriptv1 extends GhidraScript {
 		}
 		return -e;
 	}
-
-   
+  
 }
