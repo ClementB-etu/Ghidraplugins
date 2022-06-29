@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Ghidra Script - Inspecting data (strings) and looking for a possible decoding function
+//Ghidra Script - Inspecting data (strings) and returning a possible decoding function
 //@category    Examples
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png

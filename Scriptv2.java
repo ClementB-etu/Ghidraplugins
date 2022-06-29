@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Ghidra Script - Sanitizing, Inspecting & deobfuscating sanitized data in .rodata
+//Ghidra Script - Sanitizing, Inspecting & deobfuscating sanitized data in .rodata (specialized to AAD-Encoding)
 //@category    Examples
 //@keybinding  ctrl shift COMMA
 //@toolbar    world.png
