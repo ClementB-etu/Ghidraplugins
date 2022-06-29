@@ -20,29 +20,23 @@
 
 
 import ghidra.app.script.GhidraScript;
-import ghidra.app.util.bin.ByteProvider;
-import ghidra.app.util.bin.MemoryByteProvider;
-import ghidra.app.util.XReferenceUtil;
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
 import ghidra.app.decompiler.ClangTokenGroup;
 
 import ghidra.util.Msg;
 
-import ghidra.program.model.address.Address;
 import ghidra.program.model.mem.*;
 import ghidra.program.model.listing.*;
 import ghidra.program.model.data.*;
 import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.model.symbol.Reference;
-import ghidra.program.util.DefinedDataIterator;
 import ghidra.program.util.string.*;
 import ghidra.program.model.address.AddressSetView;
+import ghidra.program.model.address.Address;
 
 import java.lang.Math;
 import java.util.*;
-import java.util.stream.*;  
-import java.util.zip.*;
 import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
@@ -55,7 +49,6 @@ public class Scriptv1 extends GhidraScript {
     */
     String decodefilename = "decode.c";
     String resfilename = "res.txt";
-    Set<String> foundstr = new HashSet<String>(); 
 
 
     @Override
@@ -147,30 +140,28 @@ public class Scriptv1 extends GhidraScript {
                     {
                         Instruction nextinstr = i.getNext();
                     
-                        if (nextinstr.getMnemonicString().equals("CALL"))
+                        while (!nextinstr.getMnemonicString().equals("CALL"))
                         {
-                            //Retrieve address used by the CALL instruction
-                            Address[] flows = nextinstr.getFlows();
-                            for (int j = 0; j<flows.length;j++)
-                            {
-                                if (refcount.containsKey(flows[j]))
-                                {
-                                    refcount.put(flows[j],refcount.get(flows[j]) + 1);
-
-                                    List<String> listStr = new ArrayList<String>();
-                                    listStr.addAll(refobj.get(flows[j]));
-                                    listStr.add(f.getDataInstance​(mem).toString());
-                                    refobj.put(flows[j],listStr);
-
-                                } else {
-                                    refcount.put(flows[j],1);
-
-                                    List<String> listStr = new ArrayList<String>();
-                                    listStr.add(f.getDataInstance​(mem).toString());
-                                    refobj.put(flows[j],listStr);
-                                }
-                            }    
+                            nextinstr = i.getNext();  
                         }
+                        //Retrieve address used by the CALL instruction
+                        Address[] flows = nextinstr.getFlows();
+                        for (int j = 0; j<flows.length;j++)
+                        {
+                            if (refcount.containsKey(flows[j]))
+                            {
+                                refcount.put(flows[j],refcount.get(flows[j]) + 1);
+                                List<String> listStr = new ArrayList<String>();
+                                listStr.addAll(refobj.get(flows[j]));
+                                listStr.add(f.getDataInstance​(mem).toString());
+                                refobj.put(flows[j],listStr);
+                            } else {
+                                refcount.put(flows[j],1);
+                                List<String> listStr = new ArrayList<String>();
+                                listStr.add(f.getDataInstance​(mem).toString());
+                                refobj.put(flows[j],listStr);
+                            }
+                        }    
                     } 
                 });
 
