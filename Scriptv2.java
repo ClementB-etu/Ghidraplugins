@@ -240,8 +240,7 @@ public class Scriptv2 extends GhidraScript {
 
                 //Comment choisir le seuil ?
 
-                //
-                treshold = meanScore + 1.9*(etypeScore/Math.sqrt(scores.size())) ; // Borne supérieur de l'intervalle de confiance à 95% (formule)
+                treshold = meanScore - (etypeScore/Math.sqrt(scores.size())) ; // Borne supérieur de l'intervalle de confiance à 95% (formule)
                 println("treshold entropy is : " + treshold);
 
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
