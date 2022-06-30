@@ -160,6 +160,8 @@ public class Scriptv2 extends GhidraScript {
                         //println("dat : " + ((String) dat.getValue()) + "(nbr XREF : " + nbref + " )");
 
                         /*
+                        *   working with score and weight 
+                        *   
                         *   Here, we calculate indicators for all strings, and associate a score to each depending on the weights we discussed at the begining
                         *   Then, we store the results
                         */
@@ -174,29 +176,14 @@ public class Scriptv2 extends GhidraScript {
                         String str = (String) dat.getValue();
                         double entr = getShannonEntropy(str);
                         meanScore += entr;
+                        println("\nSTR entropy : " + entr + " ( " + str + " )");
 
-                        println("\n\nSTR entropy : " + entr + " ( " + str + " )");
-
-                        /*
-                        * working with compressed string to see any difference between encoded/non-encoded string
-                        
-                        String compressedstr = str + str + str;
-                        
-                        Deflater def = new Deflater();
-                        def.setInput(compressedstr.getBytes("UTF-8")); 
-                        def.finish();
-                        byte compString[] = new byte[1024];
-                        int compSize = def.deflate(compString);
-                        //int compSize = def.deflate(compString, 3, 13, Deflater.FULL_FLUSH);
-                        String finstr = new String(compString);
-                        double ratio = entr/getShannonEntropy(finstr);
-                        println("Compressed str size : " + compSize + " entr : " + getShannonEntropy(finstr) + "\nratio : " + ratio + "\n");
-                        def.end();
-                        */
 
                         /*
                         * working with subparts
+                        */ 
 
+                        /*
                         int nbparts = str.length()/8;
                         List<Double> listentr = new ArrayList<Double>();
                         for (int i = 0; i<nbparts;i++) 
@@ -271,20 +258,20 @@ public class Scriptv2 extends GhidraScript {
                             {
                                 Instruction nextinstr = i.getNext();
                             
-                                if (nextinstr.getMnemonicString().equals("CALL"))
+                                while (!nextinstr.getMnemonicString().equals("CALL"))
                                 {
-                                    //Retrieve address used by the CALL instruction
-                                    Address[] flows = nextinstr.getFlows();
-                                    for (int j = 0; j<flows.length;j++)
+                                    nextinstr = i.getNext();  
+                                }
+                                //Retrieve address used by the CALL instruction
+                                Address[] flows = nextinstr.getFlows();
+                                for (int j = 0; j<flows.length;j++)
+                                {
+                                    if (flowcount.containsKey(flows[j]))
                                     {
-                                        if (flowcount.containsKey(flows[j]))
-                                        {
-                                            flowcount.put(flows[j],flowcount.get(flows[j]) + 1);
-                                        } else {
-                                            flowcount.put(flows[j],1);
-                                        }
+                                        flowcount.put(flows[j],flowcount.get(flows[j]) + 1);
+                                    } else {
+                                        flowcount.put(flows[j],1);
                                     }
-                                    
                                 }
                             }   
                         } catch (Exception e) { }

@@ -53,21 +53,16 @@ public class Scriptv1 extends GhidraScript {
     @Override
     protected void run() throws Exception {
         /*
-        *
+        * Memory object to collect data
         */
         Memory mem = currentProgram.getMemory();
         MemoryBlock[] memblocksSections = mem.getBlocks();
 
-        /*
-        *
-        */
-        Set<FoundString> list = new HashSet<FoundString>();
-        FoundStringCallback foundStringCallback = foundString -> list.add(foundString);
-        StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
-        AddressSetView addressview = ss.search(null,foundStringCallback, true, monitor);
+        
 
         /*
-        *   
+        * refcount : (Address, number of time that address is called with a string), the address with the maximum integer will be supposed as the decoding function
+        * refobj : (Address, list of strings that are used as parameter by the function at the address), this list is displayed at the end of the analysis, to show how encoded strings look like
         */
         Map<Address, Integer> refcount = new HashMap<Address, Integer>();
         Map<Address, List<String>> refobj = new HashMap<Address, List<String>>();
@@ -79,32 +74,37 @@ public class Scriptv1 extends GhidraScript {
                     "This script should be run from a tool with open program.");
             return;
         }
-
+        
+        /*
+        * This part is useful to be sure that all strings are identified as such by the Ghidra Analyzer
+        * Without it, some encoded string might miss at the end
+        */
         for (MemoryBlock secblock : memblocksSections) {
             if (secblock.getName().equals(".rodata"))
             {
                 byte[] b = new byte[(int)secblock.getSize()];                
                 Address addr = secblock.getStart();
 
-                //Iterates through .rodata to "create" str (even big strings that aren't analyzed by Ghidra's analyzer)
+                //Iterates through .rodata by incrementing the value of addr to "create" str (even big strings that aren't analyzed by Ghidra's analyzer)
                 while (secblock.contains(addr))
                 {
                     Data dat = currentProgram.getListing().getDataAt(addr);
                     long lgth = dat.getLength();
 
-                    /*
-                    * Initially, "unrecognized" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
-                    */
+                    
+                    //Initially, "unrecognized" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
                     if (lgth == 1)
                     {
                         try 
                         {
+                            //This line converts long sequence of byte to string if it is
                             currentProgram.getListing().createData​(addr, StringDataType.dataType);
-                            //Datatype changed, so string has been created and dat (value, length ... )has changed
 
+                            //Datatype changed, so string has been created and dat (value, length ... ) changed too
                             dat = currentProgram.getListing().getDataAt(addr);
                             lgth = dat.getLength();
-                            //If lgth doesn't change, it isn't a string so codeunit needs to be clear in order not to crash during the next execution (if string exist at this addr, it crashes when creating string)
+
+                            //If lgth doesn't change, dat doesn't represent a string,  so codeunit needs to be clear in order not to crash during the next execution (if string exist at this addr, it crashes when creating string)
                             if (lgth == 1) 
                             {
                                 currentProgram.getListing().clearCodeUnits(addr, addr.add(1), true);
@@ -123,8 +123,20 @@ public class Scriptv1 extends GhidraScript {
             }
         }
 
+        /*
+        * list used to deal with all strings in the executable
+        */
+        Set<FoundString> list = new HashSet<FoundString>();
+        FoundStringCallback foundStringCallback = foundString -> list.add(foundString);
+        StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
+        AddressSetView addressview = ss.search(null,foundStringCallback, true, monitor);
+
+        /*
+        * Iterates through found strings
+        */
         for (FoundString f : list)
         {   
+            
             Data data = getDataAt(f.getAddress());
             try
             {
