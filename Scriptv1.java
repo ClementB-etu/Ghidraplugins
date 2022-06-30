@@ -42,7 +42,6 @@ import java.io.*;
 import java.nio.file.*;
 
 public class Scriptv1 extends GhidraScript {
-    
 
     /*
     * Name of the file created to store the decompiled "decoding function"
@@ -136,7 +135,7 @@ public class Scriptv1 extends GhidraScript {
         */
         for (FoundString f : list)
         {   
-            
+
             Data data = getDataAt(f.getAddress());
             try
             {

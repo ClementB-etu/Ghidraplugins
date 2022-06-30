@@ -166,12 +166,14 @@ public class Scriptv2 extends GhidraScript {
                         *   Then, we store the results
                         */
 
-                        /*double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
+                        /*
+                        double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
                         double scorelenght = getAppropriateLength((String) dat.getValue()) * this.lengthW;
                         double scoreentropy = getShannonEntropy((String) dat.getValue()) * this.entropyW;
                         double scorexref = nbref * this.nbrXREFW;
                         double score = (scoresymbols + scorelenght + scoreentropy + scorexref);
-                        meanScore += score;*/
+                        meanScore += score;
+                        */
 
                         String str = (String) dat.getValue();
                         double entr = getShannonEntropy(str);
