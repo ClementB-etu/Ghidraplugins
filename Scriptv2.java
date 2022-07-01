@@ -227,7 +227,9 @@ public class Scriptv2 extends GhidraScript {
                 etypeScore = Math.sqrt(etypeScore / scores.size());
                 println("standard deviation entropy is : " + etypeScore);
 
-                //Comment choisir le seuil ?
+                /*
+                * The treshold is choosen to 'select' which strings are encoded and which aren't based on their entropy
+                */
 
                 treshold = meanScore - (etypeScore/Math.sqrt(scores.size())) ; // Borne supérieur de l'intervalle de confiance à 95% (formule)
                 println("treshold entropy is : " + treshold);
@@ -288,11 +290,20 @@ public class Scriptv2 extends GhidraScript {
                     {
                         if (entry.getValue() == max)
                         {
+                            /*
+                            * By analysing the address, we retrieve the decopiled code
+                            * We custom it (by adding imports, changing variable type that are 'undefined' in the decompiled code)
+                            * And we add a 'main' function, allowing us to pass a string as argument of the executable
+                            * and so get the associate decoded string
+                            */
                             analyseAddress(entry.getKey());
                         }
                     }
                 } catch (Exception e) { }
-                 
+                
+                /*
+                * This part is used to compile the custom decompiled code of the decoding function
+                */
                 ProcessBuilder pb = new ProcessBuilder("gcc", "-m32",decodefilename,"-o","decode");
                 pb.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
                 Process procgcc = pb.start();
@@ -306,17 +317,22 @@ public class Scriptv2 extends GhidraScript {
                     FileWriter fwres = new FileWriter(resfile, false);
                     PrintWriter pwres = new PrintWriter(fwres);
                     
+                    /*
+                    * We iterate through the suspicious strings, and pass it as argument of the executable 
+                    * that we create by compiling the decoding function
+                    * Then we write the result in a res.txt file
+                    */
+
                     for (String s : suspiciousstr) {
+                        ProcessBuilder pbdecode = new ProcessBuilder("./decode", s);
+                        pbdecode.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
+                        Process procdecode = pbdecode.start();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(procdecode.getInputStream()));
+                        Stream<String> line = reader.lines();
+                        String res = String.join("\n",line.collect(Collectors.toList()));
 
-                    ProcessBuilder pbdecode = new ProcessBuilder("./decode", s);
-                    pbdecode.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
-                    Process procdecode = pbdecode.start();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(procdecode.getInputStream()));
-                    Stream<String> line = reader.lines();
-                    String res = String.join("\n",line.collect(Collectors.toList()));
-
-                    pwres.println(res);
-                    procdecode.waitFor();                
+                        pwres.println(res);
+                        procdecode.waitFor();                
                     }
 
                     pwres.close();
@@ -422,6 +438,10 @@ public class Scriptv2 extends GhidraScript {
        
         return 0;
     }
+
+    /*
+    * These functions are used to calculate 'indicators of encoding'
+    */
 
 
     public static double log2(double x) {

@@ -140,7 +140,14 @@ public class Scriptv1 extends GhidraScript {
             try
             {
                 ReferenceIterator refit = data.getReferenceIteratorTo();
-
+                /*
+                * A reference is a couple (AddressFrom,AddressTo) 
+                * For each reference which has the string's storage address as AddressTo
+                * We look for the instruction at the AddressFrom
+                * If this instruction's mnemonic is a 'PUSH', our string is likely to be used by a function as a parameter
+                * So we look for the next instruction that is a CALL
+                * And we store the address of the called function
+                */
                 refit.forEach(ref -> {
                     Address addrFrom = ref.getFromAddress();
                     Instruction i = getInstructionAt(addrFrom);
@@ -153,7 +160,15 @@ public class Scriptv1 extends GhidraScript {
                         {
                             nextinstr = i.getNext();  
                         }
-                        //Retrieve address "used" by the CALL instruction
+
+                        /*
+                        * For each flow (which is an address used by the 'CALL' instruction we are looking at)
+                        * We store it in a map (Map<Address, String> refcount) with a '1' as value if the address wasn't already in the map
+                        * Otherwise, we increment its associate integer
+                        *
+                        * There is also an other map (Map<Address, List<String>> refobj) which stores the address of the function called 
+                        * and the list of strings used as parameter (if called various time)
+                        */
                         Address[] flows = nextinstr.getFlows();
                         for (int j = 0; j<flows.length;j++)
                         {
@@ -179,6 +194,10 @@ public class Scriptv1 extends GhidraScript {
             } catch (Exception e) { }                                 
         }
 
+        /*
+        * By doing so, the supposed decoding function is the function that is used with a string parameter the most times
+        * So we retrieve the name, and the decompiled .c code for the user of this plugin to look through the code
+        */
         int max = Collections.max(refcount.values());
         Address addrsus = null;
         Function fct = null;
@@ -193,12 +212,19 @@ public class Scriptv1 extends GhidraScript {
             }
         }
 
+        /*
+        * The string used by the supposed decoding function are printed
+        * For the user to see how the encoded strings look like 
+        */
         List<String> res = refobj.get(addrsus);  
         res.forEach(r -> println(" * " + r));
-
+        
+        /*
+        * The decompiled code of the supposed decoding function provided by ghidra is written in a .c file
+        * For the user to investigate on how the decoding process works
+        */
         DecompInterface ifc = new DecompInterface();
         ifc.openProgram(currentProgram);
-
         DecompileResults rescode = ifc.decompileFunction(fct,0,monitor);
         ClangTokenGroup tokgroupcode = rescode.getCCodeMarkup();
         String ccode = tokgroupcode.toString();
@@ -216,33 +242,5 @@ public class Scriptv1 extends GhidraScript {
             println("[ERROR] " + e.getMessage());
         }
     }
-
-    public static double log2(double x) {
-		return (double) (Math.log(x) / Math.log(2));
-	}
-
-	public double getShannonEntropy(String s) {
-		if (s == null) {
-			return 0.0;
-		}
-		int n = 0;
-		Map<Character, Integer> occ = new HashMap<>();
-		for (int c_ = 0; c_ < s.length(); ++c_) {
-			char cx = s.charAt(c_);
-			if (occ.containsKey(cx)) {
-				occ.put(cx, occ.get(cx) + 1);
-			} else {
-				occ.put(cx, 1);
-			}
-			++n;
-		}
-		double e = 0.0;
-		for (Map.Entry<Character, Integer> entry : occ.entrySet()) {
-			char cx = entry.getKey();
-			double p = (double) entry.getValue() / n;
-			e += p * log2(p);
-		}
-		return -e;
-	}
-  
+    
 }
