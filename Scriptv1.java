@@ -208,7 +208,7 @@ public class Scriptv1 extends GhidraScript {
             {
                 addrsus = entry.getKey();
                 fct = getFunctionAt(addrsus);
-                println("Suspicious address : " + (addrsus) + " ( "  + fct.getSignature() + " called with a string " + max + " times ) :");                
+                println("Suspicious address : " + (addrsus) + " ( \" "  + fct.getSignature() + " \" called with a string " + max + " times ) :");                
             }
         }
 
