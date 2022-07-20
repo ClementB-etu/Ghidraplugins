@@ -179,32 +179,7 @@ public class ScriptAgainstAADencoding extends GhidraScript {
                         double entr = getShannonEntropy(str);
                         meanScore += entr;
                         println("\nSTR entropy : " + entr + " ( " + str + " )");
-
-
-                        /*
-                        * working with subparts
-                        */ 
-
-                        /*
-                        int nbparts = str.length()/8;
-                        List<Double> listentr = new ArrayList<Double>();
-                        for (int i = 0; i<nbparts;i++) 
-                        {   
-                            int start = i*(str.length()/nbparts);
-                            int end = (i+1)*((str.length()/nbparts));
-                            String sub = str.substring(start,end);
-                            Double subentr = getShannonEntropy(sub);
-                            listentr.add(subentr);
-                            
-                            //println("SUBSTR entropy : " + subentr + " ( " + sub + " )");
-                        }                                           
-                        //println("MIN entr : " + Collections.min(listentr));
-                        //println("MAX entr : " + Collections.max(listentr));
-                        */
-
-                        /*data.put((String) dat.getValue(), dat);
-                        scores.put((String) dat.getValue(),score);*/
-
+                        
                         data.put(str, dat);
                         scores.put(str,entr);
                         
