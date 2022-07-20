@@ -43,7 +43,7 @@ import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
 
-public class Scriptv2 extends GhidraScript {
+public class ScriptAgainstAADencoding extends GhidraScript {
 
     /*
     *   Weigths used regarding the relevance of each indicator
