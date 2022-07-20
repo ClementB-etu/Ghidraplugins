@@ -58,8 +58,7 @@ public class ScriptAgainstAADencoding extends GhidraScript {
     int entropyW = 12;
     int symbolW = 10;
     int nbrXREFW = 4;
-    int lengthW = 2;
-    
+    int lengthW = 2;  
 
     /*
     * Name of the file created to be compiled and used to decode suspicious strings
@@ -179,7 +178,7 @@ public class ScriptAgainstAADencoding extends GhidraScript {
                         double entr = getShannonEntropy(str);
                         meanScore += entr;
                         println("\nSTR entropy : " + entr + " ( " + str + " )");
-                        
+
                         data.put(str, dat);
                         scores.put(str,entr);
                         
