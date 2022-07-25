@@ -221,7 +221,7 @@ public class ScriptAADencoding   extends GhidraScript {
                     }
                     
                 }
-                println(nbdetect + " detected (" + nbdetect+"/"+scores.size()+")");
+                println(nbdetect + " detected (" + nbdetect + "/"+scores.size() + ")");
 
                 for (String s : suspiciousstr) {
                     
