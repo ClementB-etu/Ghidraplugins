@@ -42,12 +42,11 @@ import java.io.*;
 import java.nio.file.*;
 
 public class ScriptHelpingDecoding extends GhidraScript {
-
+    
     /*
     * Name of the file created to store the decompiled "decoding function"
     */
     String resfilename = "res.c";
-
 
     @Override
     protected void run() throws Exception {
