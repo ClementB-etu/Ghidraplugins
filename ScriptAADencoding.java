@@ -12,22 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-//Ghidra Script - Sanitizing, Inspecting & deobfuscating sanitized data in .rodata (specialized to AAD-Encoding)
+*/
+
+//Ghidra Script - Inspecting & deobfuscating strings (specific to AAD-Encoding)
 //@category    Examples
-//@keybinding  ctrl shift COMMA
-//@toolbar    world.png
+//@author Clément BELLEIL
 
 import ghidra.app.script.GhidraScript;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.bin.MemoryByteProvider;
-import ghidra.app.util.XReferenceUtil;
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
 import ghidra.app.decompiler.ClangTokenGroup;
-
 import ghidra.util.Msg;
-
 import ghidra.program.model.address.Address;
 import ghidra.program.model.mem.*;
 import ghidra.program.model.listing.*;
@@ -38,8 +35,6 @@ import ghidra.program.util.DefinedDataIterator;
 import java.lang.Math;
 import java.util.*;
 import java.util.stream.*;  
-import java.util.zip.*;
-import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
 

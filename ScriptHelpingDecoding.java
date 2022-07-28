@@ -33,8 +33,8 @@ import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.address.Address;
 
 import java.lang.Math;
-import java.util.*;
 import java.util.Map.Entry;
+import java.util.*;
 import java.io.*;
 import java.nio.file.*;
 
