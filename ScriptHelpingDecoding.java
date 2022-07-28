@@ -12,20 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-//Ghidra Script - Inspecting data (strings) and returning a possible decoding function
-//@category    Examples
-//@keybinding  ctrl shift COMMA
-//@toolbar    world.png
+*/
 
+//Ghidra Script - Inspecting data (strings) and returning a possible decoding function (`resfilename`.c)
+//@category    Examples
+//@author Clément BELLEIL
 
 import ghidra.app.script.GhidraScript;
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
 import ghidra.app.decompiler.ClangTokenGroup;
-
 import ghidra.util.Msg;
-
 import ghidra.program.model.mem.*;
 import ghidra.program.model.listing.*;
 import ghidra.program.model.data.*;
@@ -41,26 +38,29 @@ import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
 
+
 public class ScriptHelpingDecoding extends GhidraScript {
     
     /*
-    * Name of the file created to store the decompiled "decoding function"
+    * Name of the file created with the decompiled "decoding function"
     */
     String resfilename = "res.c";
 
+    /** Implemented method from `GhidraScript` used when the plugin is launched 
+    * @return void
+    */
     @Override
     protected void run() throws Exception {
+
         /*
-        * Memory object to collect data
+        * Memory object to collect data (bytes)
         */
         Memory mem = currentProgram.getMemory();
         MemoryBlock[] memblocksSections = mem.getBlocks();
 
-        
-
         /*
-        * refcount : (Address, number of time that address is called with a string), the address with the maximum integer will be supposed as the decoding function
-        * refobj : (Address, list of strings that are used as parameter by the function at the address), this list is displayed at the end of the analysis, to show how encoded strings look like
+        * refcount : (Address, amount of times that address is called with a string as parameter), the address with the maximum integer will be guessed as the decoding function
+        * refobj : (Address, list of strings that are used as parameter by the function at the address), this list is displayed at the end of the analysis to show how encoded strings look like
         */
         Map<Address, Integer> refcount = new HashMap<Address, Integer>();
         Map<Address, List<String>> refobj = new HashMap<Address, List<String>>();
@@ -75,22 +75,22 @@ public class ScriptHelpingDecoding extends GhidraScript {
         
         /*
         * This part is useful to be sure that all strings are identified as such by the Ghidra Analyzer
-        * Without it, some encoded string might miss at the end
+        * Without it, some encoded string might be missing at the end
         */
         for (MemoryBlock secblock : memblocksSections) {
             if (secblock.getName().equals(".rodata"))
             {
+                //b contains .rodata bytes
                 byte[] b = new byte[(int)secblock.getSize()];                
                 Address addr = secblock.getStart();
 
-                //Iterates through .rodata by incrementing the value of addr to "create" str (even big strings that aren't analyzed by Ghidra's analyzer)
+                //Iterates through .rodata by incrementing the value of addr to "create" str (big strings that aren't analyzed by Ghidra's analyzer)
                 while (secblock.contains(addr))
                 {
                     Data dat = currentProgram.getListing().getDataAt(addr);
                     long lgth = dat.getLength();
 
-                    
-                    //Initially, "unrecognized" strings are 1byte-long while they aren't identified yet as proper string, but as a long sequence of byte
+                    //Initially, "unrecognized" strings are 1byte-long while they aren't identified yet as proper string
                     if (lgth == 1)
                     {
                         try 
@@ -102,7 +102,7 @@ public class ScriptHelpingDecoding extends GhidraScript {
                             dat = currentProgram.getListing().getDataAt(addr);
                             lgth = dat.getLength();
 
-                            //If lgth doesn't change, dat doesn't represent a string,  so codeunit needs to be clear in order not to crash during the next execution (if string exist at this addr, it crashes when creating string)
+                            //If lgth hasn't changed, `dat` isn't a string, so codeunit needs to be cleared for the program not to crash during the next execution
                             if (lgth == 1) 
                             {
                                 currentProgram.getListing().clearCodeUnits(addr, addr.add(1), true);
@@ -117,21 +117,20 @@ public class ScriptHelpingDecoding extends GhidraScript {
                         addr = addr.add(lgth);
                     }  
                 }
-                break;
             }
         }
 
         /*
-        * list used to deal with all strings in the executable
+        * list : list used to deal with all strings in the executable
+        * ss : StringSearcher object implemented in the `ghidra.program.util.string` package
+        * foundStringCallback : callback function called when a string is found by ss
         */
         Set<FoundString> list = new HashSet<FoundString>();
         FoundStringCallback foundStringCallback = foundString -> list.add(foundString);
         StringSearcher ss = new StringSearcher(currentProgram, 5, 1, false, true);
-        AddressSetView addressview = ss.search(null,foundStringCallback, true, monitor);
+        ss.search(null,foundStringCallback, true, monitor);
 
-        /*
-        * Iterates through found strings
-        */
+
         for (FoundString f : list)
         {   
 
@@ -141,10 +140,10 @@ public class ScriptHelpingDecoding extends GhidraScript {
                 ReferenceIterator refit = data.getReferenceIteratorTo();
                 /*
                 * A reference is a couple (AddressFrom,AddressTo) 
-                * For each reference which has the string's storage address as AddressTo
+                * For each reference that has the string's address as AddressTo
                 * We look for the instruction at the AddressFrom
-                * If this instruction's mnemonic is a 'PUSH', our string is likely to be used by a function as a parameter
-                * So we look for the next instruction that is a CALL
+                * If this instruction's mnemonic is a 'PUSH', the string is likely to be used as a parameter by a function
+                * So we look for the next CALL instruction 
                 * And we store the address of the called function
                 */
                 refit.forEach(ref -> {
@@ -161,11 +160,11 @@ public class ScriptHelpingDecoding extends GhidraScript {
                         }
 
                         /*
-                        * For each flow (which is an address used by the 'CALL' instruction we are looking at)
-                        * We store it in a map (Map<Address, String> refcount) with a '1' as value if the address wasn't already in the map
-                        * Otherwise, we increment its associate integer
+                        * For each flow (i.e an address used by the 'CALL' instruction)
+                        * We store it in a map (Map<Address, String> `refcount`) with a '1' as value if the address wasn't already in it
+                        * Otherwise, we increment the value
                         *
-                        * There is also an other map (Map<Address, List<String>> refobj) which stores the address of the function called 
+                        * There is also an other map (Map<Address, List<String>> `refobj`) which stores the address of the function called 
                         * and the list of strings used as parameter (if called various time)
                         */
                         Address[] flows = nextinstr.getFlows();
@@ -190,12 +189,14 @@ public class ScriptHelpingDecoding extends GhidraScript {
                     } 
                 });
 
-            } catch (Exception e) { }                                 
+            } catch (Exception e) {
+                println(e.getMessage());
+            }                                 
         }
 
         /*
-        * By doing so, the supposed decoding function is the function that is used with a string parameter the most times
-        * So we retrieve the name, and the decompiled .c code for the user of this plugin to look through the code
+        * By doing so, the supposed decoding function is the function that has the bigger value in `refcount`
+        * So we retrieve the name, and the decompiled .c code for the user to look through the code
         */
         int max = Collections.max(refcount.values());
         Address addrsus = null;
@@ -207,13 +208,13 @@ public class ScriptHelpingDecoding extends GhidraScript {
             {
                 addrsus = entry.getKey();
                 fct = getFunctionAt(addrsus);
-                println("Suspicious address : " + (addrsus) + " ( \" "  + fct.getSignature() + " \" called with a string " + max + " times ) :");                
+                println("Suspicious address : " + (addrsus));                
+                println("Suspicious function : "  + fct.getSignature() + " || called with a string " + max + " times");          
             }
         }
 
         /*
-        * The string used by the supposed decoding function are printed
-        * For the user to see how the encoded strings look like 
+        * Strings used by the supposed decoding function are printed
         */
         List<String> res = refobj.get(addrsus);  
         res.forEach(r -> println(" * " + r));
