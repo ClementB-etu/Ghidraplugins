@@ -164,8 +164,7 @@ public class ScriptAADencoding extends GhidraScript {
                         double scorelenght = getAppropriateLength((String) dat.getValue()) * this.lengthW;
                         double scoresymbols = getNumberOrLetter((String) dat.getValue()) * this.symbolW;
                         double scoreentropy = entr * this.entropyW;
-                        //double scorexref = nbref * this.nbrXREFW;
-                        //double score = (scoresymbols + scorelenght + scoreentropy + scorexref);
+
                         double score = (scoreentropy + scorelenght + scoresymbols);
                         meanScore += score;
 
@@ -183,18 +182,18 @@ public class ScriptAADencoding extends GhidraScript {
                 int nbdetect = 0;
 
                 meanScore /= scores.size();
-                println("mean score is : " + (meanScore));
+                //println("mean score is : " + (meanScore));
 
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
                     etypeScore += Math.pow((entry.getValue()-meanScore),2);
                 }
 
                 etypeScore = Math.sqrt(etypeScore / scores.size());
-                println("standard deviation entropy is : " + etypeScore);
+                //println("standard deviation entropy is : " + etypeScore);
 
                 //The treshold is choosen in order to 'select' which strings are encoded and which aren't based on their entropy, their length ...
                 treshold = meanScore - (etypeScore/Math.sqrt(scores.size())) ;
-                println("treshold entropy is : " + treshold);
+                //println("treshold entropy is : " + treshold);
 
                 for (Map.Entry<String, Double> entry : scores.entrySet()) {
                     
@@ -206,7 +205,7 @@ public class ScriptAADencoding extends GhidraScript {
                     }
                     
                 }
-                println(nbdetect + " detected (" + nbdetect + "/"+scores.size() + ")");
+                println(nbdetect + " strings detected (" + nbdetect + "/"+scores.size() + ")");
                 
                 for (String s : suspiciousstr) {
                     
@@ -282,13 +281,12 @@ public class ScriptAADencoding extends GhidraScript {
                 * This part is used to compile the custom decompiled code of the decoding function
                 */
                 ProcessBuilder pb = new ProcessBuilder("gcc", "-m32",decodefilename,"-o","decode");
-                pb.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
                 Process procgcc = pb.start();
                 procgcc.waitFor();
 
                 try
                 {
-                    String pathres = "/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/" + resfilename;
+                    String pathres = resfilename;
                     File resfile = new File(pathres);
                     FileWriter fwres = new FileWriter(resfile, false);
                     PrintWriter pwres = new PrintWriter(fwres);
@@ -301,7 +299,6 @@ public class ScriptAADencoding extends GhidraScript {
 
                     for (String s : suspiciousstr) {
                         ProcessBuilder pbdecode = new ProcessBuilder("./decode", s);
-                        pbdecode.directory(new File("/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/"));   
                         Process procdecode = pbdecode.start();
                         BufferedReader reader = new BufferedReader(new InputStreamReader(procdecode.getInputStream()));
                         Stream<String> line = reader.lines();
@@ -407,11 +404,13 @@ public class ScriptAADencoding extends GhidraScript {
 
         try
         {
-            String path = "/home/cytech/Desktop/ING2GSI1/STAGE/ERMBrussels/STAGE/Project/scripts/" + decodefilename;
+            String path = decodefilename;
             File code = new File(path);
             FileWriter fw = new FileWriter(code, false);
             PrintWriter pw = new PrintWriter(fw);
             pw.println(ccode);
+            println(" ** Code of the suposed decoding function on file : ~/" + decodefilename);
+            println(" ** Results of the decoded strings : ~/" + resfilename);
             pw.close();
         } catch (Exception e) { 
             println("[ERROR] " + e.getMessage());
